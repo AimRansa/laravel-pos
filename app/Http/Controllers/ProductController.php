@@ -2,143 +2,91 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\ProductStoreRequest;
-use App\Http\Requests\ProductUpdateRequest;
-use App\Http\Resources\ProductResource;
 use App\Models\Product;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function index(Request $request)
     {
-        $products = new Product();
+        $products = Product::query();
+
         if ($request->search) {
-            $products = $products->where('name', 'LIKE', "%{$request->search}%");
+            $products->where('id_produk', 'LIKE', "%{$request->search}%");
         }
+
         $products = $products->latest()->paginate(10);
-        if (request()->wantsJson()) {
-            return ProductResource::collection($products);
-        }
-        return view('products.index')->with('products', $products);
+        return view('products.index', compact('products'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function create()
     {
-        return view('products.create');
-    }
+        // 🔢 Auto-generate ID produk (maksimal 3 karakter, misal: P01, P02, dst)
+        $lastProduct = Product::orderBy('id', 'desc')->first();
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(ProductStoreRequest $request)
-    {
-        $image_path = '';
-
-        if ($request->hasFile('image')) {
-            $image_path = $request->file('image')->store('products', 'public');
+        if ($lastProduct && strlen($lastProduct->id_produk) === 3 && ctype_alnum($lastProduct->id_produk)) {
+            $prefix = substr($lastProduct->id_produk, 0, 1);
+            $lastNumber = (int) substr($lastProduct->id_produk, 1);
+            $newNumber = str_pad($lastNumber + 1, 2, '0', STR_PAD_LEFT);
+            $newId = $prefix . $newNumber;
+        } else {
+            $newId = 'P01';
         }
 
-        $product = Product::create([
-            'name' => $request->name,
-            'description' => $request->description,
-            'image' => $image_path,
-            'barcode' => $request->barcode,
-            'price' => $request->price,
-            'quantity' => $request->quantity,
-            'status' => $request->status
+        return view('products.create', compact('newId'));
+    }
+
+    public function store(Request $request)
+    {
+        $request->validate([
+            'id_produk' => 'required|string|max:3|unique:products,id_produk',
+            'tanggal_keluar' => 'required|date',
+            'tanggal_masuk' => 'required|date',
+            'tanggal_expired' => 'required|date|after_or_equal:tanggal_masuk',
+        ], [
+            'id_produk.required' => 'ID produk wajib diisi.',
+            'id_produk.max' => 'ID produk maksimal 3 karakter.',
+            'id_produk.unique' => 'ID produk sudah digunakan, silakan gunakan ID lain.',
+            'tanggal_masuk.required' => 'Tanggal masuk wajib diisi.',
+            'tanggal_keluar.required' => 'Tanggal keluar wajib diisi.',
+            'tanggal_expired.after_or_equal' => 'Tanggal expired harus setelah atau sama dengan tanggal masuk.',
         ]);
 
-        if (!$product) {
-            return redirect()->back()->with('error', __('product.error_creating'));
-        }
-        return redirect()->route('products.index')->with('success', __('product.success_creating'));
+        Product::create([
+            'id_produk' => $request->id_produk,
+            'tanggal_keluar' => $request->tanggal_keluar,
+            'tanggal_masuk' => $request->tanggal_masuk,
+            'tanggal_expired' => $request->tanggal_expired,
+        ]);
+
+        return redirect()->route('products.index')->with('success', '✅ Data stok berhasil ditambahkan!');
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\Product  $product
-     * @return \Illuminate\Http\Response
-     */
-    public function show(Product $product)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\Product  $product
-     * @return \Illuminate\Http\Response
-     */
     public function edit(Product $product)
     {
-        return view('products.edit')->with('product', $product);
+        return view('products.edit', compact('product'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Product  $product
-     * @return \Illuminate\Http\Response
-     */
-    public function update(ProductUpdateRequest $request, Product $product)
+    public function update(Request $request, Product $product)
     {
-        $product->name = $request->name;
-        $product->description = $request->description;
-        $product->barcode = $request->barcode;
-        $product->price = $request->price;
-        $product->quantity = $request->quantity;
-        $product->status = $request->status;
+        $request->validate([
+            'tanggal_keluar' => 'required|date',
+            'tanggal_masuk' => 'required|date',
+            'tanggal_expired' => 'required|date|after_or_equal:tanggal_masuk',
+        ]);
 
-        if ($request->hasFile('image')) {
-            // Delete old image
-            if ($product->image) {
-                Storage::delete($product->image);
-            }
-            // Store image
-            $image_path = $request->file('image')->store('products', 'public');
-            // Save to Database
-            $product->image = $image_path;
-        }
+        $product->update([
+            'tanggal_keluar' => $request->tanggal_keluar,
+            'tanggal_masuk' => $request->tanggal_masuk,
+            'tanggal_expired' => $request->tanggal_expired,
+        ]);
 
-        if (!$product->save()) {
-            return redirect()->back()->with('error', __('product.error_updating'));
-        }
-        return redirect()->route('products.index')->with('success', __('product.success_updating'));
+        return redirect()->route('products.index')->with('success', '✅ Data stok berhasil diperbarui!');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\Product  $product
-     * @return \Illuminate\Http\Response
-     */
     public function destroy(Product $product)
     {
-        if ($product->image) {
-            Storage::delete($product->image);
-        }
         $product->delete();
-
-        return response()->json([
-            'success' => true
-        ]);
+        return redirect()->route('products.index')->with('success', '🗑️ Data stok berhasil dihapus!');
     }
 }

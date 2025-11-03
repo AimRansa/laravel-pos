@@ -2,26 +2,23 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Storage;
 
 class Product extends Model
 {
+    use HasFactory;
+
+    protected $table = 'products';
+
+    // Kolom yang boleh diisi lewat create() / update()
     protected $fillable = [
-        'name',
-        'description',
-        'image',
-        'barcode',
-        'price',
-        'quantity',
-        'status'
+        'id_produk',
+        'tanggal_masuk',
+        'tanggal_keluar',
+        'tanggal_expired',
     ];
 
-    public function getImageUrl()
-    {
-        if ($this->image) {
-            return Storage::url($this->image);
-        }
-        return asset('images/img-placeholder.jpg');
-    }
+    // (Opsional) kalau kamu tidak mau pakai timestamps otomatis
+    // public $timestamps = false;
 }

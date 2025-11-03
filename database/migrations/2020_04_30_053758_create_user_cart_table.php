@@ -6,30 +6,20 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+    public function up(): void
     {
-        Schema::create('user_cart', function (Blueprint $table) {
-            $table->foreignId('user_id');
-            $table->foreignId('product_id');
-            $table->unsignedInteger('quantity');
-
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-            $table->foreign('product_id')->references('id')->on('products')->onDelete('cascade');
+        Schema::create('cart', function (Blueprint $table) {
+            $table->id();
+            $table->string('id_menu', 3)->unique(); // maksimal 3 karakter dan tidak boleh sama
+            $table->string('nama_menu');
+            $table->string('takaran')->nullable();
+            $table->integer('harga');
+            $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
+    public function down(): void
     {
-        Schema::dropIfExists('user_cart');
+        Schema::dropIfExists('cart');
     }
 };

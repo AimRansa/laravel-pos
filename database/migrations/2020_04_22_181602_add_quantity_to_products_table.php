@@ -11,12 +11,16 @@ return new class extends Migration
      *
      * @return void
      */
-    public function up()
-    {
-        Schema::table('products', function (Blueprint $table) {
-            $table->integer('quantity')->after('price')->default('1');
-        });
-    }
+    public function up(): void
+{
+    Schema::table('products', function (Blueprint $table) {
+        // Hapus "after('price')" karena kolom 'price' tidak ada
+        if (!Schema::hasColumn('products', 'quantity')) {
+            $table->integer('quantity')->default(1);
+        }
+    });
+}
+
 
     /**
      * Reverse the migrations.

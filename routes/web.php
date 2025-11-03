@@ -11,6 +11,7 @@ use App\Http\Controllers\SupplierController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 
+
 Route::get('/', function () {
     return redirect('/admin');
 });
@@ -21,25 +22,32 @@ Route::prefix('admin')->middleware(['auth', 'locale'])->group(function () {
     Route::get('/', [HomeController::class, 'index'])->name('home');
     Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
     Route::post('/settings', [SettingController::class, 'store'])->name('settings.store');
+
+    // ✅ Daftar resource utama
     Route::resource('products', ProductController::class);
     Route::resource('customers', CustomerController::class);
-    Route::resource('orders', OrderController::class);
+    Route::resource('orders', OrderController::class); // cukup satu ini saja
     Route::resource('suppliers', SupplierController::class);
 
-    Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
-    Route::post('/cart', [CartController::class, 'store'])->name('cart.store');
-    Route::post('/cart/change-qty', [CartController::class, 'changeQty']);
-    Route::delete('/cart/delete', [CartController::class, 'delete']);
-    Route::delete('/cart/empty', [CartController::class, 'empty']);
+    // ✅ Cart / Menu Section
+    Route::resource('cart', CartController::class);
 
+    // ✅ Tambahan fungsi Cart
+    Route::post('/cart/change-qty', [CartController::class, 'changeQty'])->name('cart.changeQty');
+    Route::delete('/cart/delete', [CartController::class, 'delete'])->name('cart.delete');
+    Route::delete('/cart/empty', [CartController::class, 'empty'])->name('cart.empty');
+
+    // ✅ Pembelian
     Route::get('/purchase', [PurchaseController::class, 'index'])->name('purchase.cart.index');
     Route::post('/orders/partial-payment', [OrderController::class, 'partialPayment'])->name('orders.partial-payment');
 
+    // ✅ Translasi bahasa
     Route::get('/locale/{type}', function ($type) {
         $translations = trans($type);
         return response()->json($translations);
     });
 
+    // ✅ Ganti bahasa
     Route::get('/lang-switch/{lang}', function ($lang) {
         $supportedLocales = ['en', 'es'];
 

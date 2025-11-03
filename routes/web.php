@@ -32,6 +32,9 @@ Route::prefix('admin')->middleware(['auth', 'locale'])->group(function () {
     // ✅ Cart / Menu Section
     Route::resource('cart', CartController::class);
 
+    //lapran 
+    Route::get('/admin/laporan', [App\Http\Controllers\SettingController::class, 'index'])->name('laporan.index');
+
     // ✅ Tambahan fungsi Cart
     Route::post('/cart/change-qty', [CartController::class, 'changeQty'])->name('cart.changeQty');
     Route::delete('/cart/delete', [CartController::class, 'delete'])->name('cart.delete');

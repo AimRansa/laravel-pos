@@ -2,25 +2,23 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Setting;
 use Illuminate\Http\Request;
+use App\Models\Setting;
 
 class SettingController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return view('settings.edit');
-    }
+        $query = Setting::query();
 
-    public function store(Request $request)
-    {
-        $data = $request->except('_token');
-        foreach ($data as $key => $value) {
-            $setting = Setting::firstOrCreate(['key' => $key]);
-            $setting->value = $value;
-            $setting->save();
+        // Filter tanggal laporan
+        if ($request->filled('tanggal_laporan')) {
+            $query->whereDate('tanggal_laporan', $request->tanggal_laporan);
         }
 
-        return redirect()->route('settings.index');
+        // Ambil data laporan
+        $laporan = $query->orderBy('tanggal_laporan', 'desc')->get();
+
+        return view('settings.laporan', compact('laporan'));
     }
 }

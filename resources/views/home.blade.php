@@ -46,162 +46,176 @@
       </div>
    </div>
 </div>
+
 <div class="container-fluid">
    <div class="row">
+      {{-- LOW STOCK PRODUCTS --}}
+<div class="col-6 my-2">
+   <h3>Low Stock Product</h3>
+   <section class="content">
+      <div class="card product-list">
+         <div class="card-body">
+            <table class="table">
+               <thead>
+                  <tr>
+                     <th>ID Produk</th>
+                     <th>Nama Stok</th>
+                     <th>Jumlah Stok</th>
+                     <th>Satuan</th>
+                     <th>Tanggal Masuk</th>
+                     <th>Tanggal Expired</th>
+                  </tr>
+               </thead>
+               <tbody>
+                  @forelse ($low_stock_products as $product)
+                  <tr>
+                     <td>{{$product->id_produk}}</td>
+                     <td>{{$product->nama_stok}}</td>
+                     <td>
+                        <span class="badge badge-{{ $product->jumlah_stok < 20 ? 'danger' : 'warning' }}">
+                           {{$product->jumlah_stok}}
+                        </span>
+                     </td>
+                     <td>{{$product->satuan}}</td>
+                     <td>
+                        @if($product->tanggal_masuk instanceof \Carbon\Carbon)
+                           {{$product->tanggal_masuk->format('d/m/Y')}}
+                        @else
+                           {{\Carbon\Carbon::parse($product->tanggal_masuk)->format('d/m/Y')}}
+                        @endif
+                     </td>
+                     <td>
+                        @php
+                           $expired = $product->tanggal_expired instanceof \Carbon\Carbon 
+                              ? $product->tanggal_expired 
+                              : \Carbon\Carbon::parse($product->tanggal_expired);
+                           $isExpired = $expired->isPast();
+                        @endphp
+                        <span class="badge badge-{{ $isExpired ? 'danger' : 'info' }}">
+                           {{$expired->format('d/m/Y')}}
+                        </span>
+                     </td>
+                  </tr>
+                  @empty
+                  <tr>
+                     <td colspan="6" class="text-center">Semua stok aman</td>
+                  </tr>
+                  @endforelse
+               </tbody>
+            </table>
+         </div>
+      </div>
+   </section>
+</div>
+
+      {{-- HOT PRODUCTS (Current Month) --}}
       <div class="col-6 my-2">
-         <h3>Low Stock Product</h3>
+         <h3>Hot Products (This Month)</h3>
          <section class="content">
             <div class="card product-list">
                <div class="card-body">
                   <table class="table">
                      <thead>
                         <tr>
-                           <th>ID</th>
-                           <th>Name</th>
-                           <th>Image</th>
-                           <th>Barcode</th>
-                           <th>Price</th>
-                           <th>Quantity</th>
-                           <th>Status</th>
-                           <th>Updated At</th>
-                           <!-- <th>Actions</th> -->
+                           <th>ID Menu</th>
+                           <th>Nama Menu</th>
+                           <th>Total Terjual</th>
+                           <th>Total Pendapatan</th>
                         </tr>
                      </thead>
                      <tbody>
-                        @foreach ($low_stock_products as $product)
+                        @forelse ($current_month_products as $product)
                         <tr>
-                           <td>{{$product->id}}</td>
-                           <td>{{$product->name}}</td>
-                           <td><img class="product-img" src="{{ Storage::url($product->image) }}" alt=""></td>
-                           <td>{{$product->barcode}}</td>
-                           <td>{{$product->price}}</td>
-                           <td>{{$product->quantity}}</td>
+                           <td>{{$product->id_menu}}</td>
+                           <td>{{$product->nama_menu}}</td>
                            <td>
-                              <span class="right badge badge-{{ $product->status ? 'success' : 'danger' }}">{{$product->status ? __('common.Active') : __('common.Inactive') }}</span>
+                              <span class="badge badge-success">{{$product->total_terjual}}</span>
                            </td>
-                           <td>{{$product->updated_at}}</td>
+                           <td>{{config('settings.currency_symbol')}} {{number_format($product->total_pendapatan, 0, ',', '.')}}</td>
                         </tr>
-                        @endforeach
+                        @empty
+                        <tr>
+                           <td colspan="4" class="text-center">Belum ada penjualan bulan ini</td>
+                        </tr>
+                        @endforelse
                      </tbody>
                   </table>
                </div>
             </div>
          </section>
       </div>
-      <div class="col-6 my-2">
-         <h3>Hot Products</h3>
-         <section class="content">
-            <div class="card product-list">
-               <div class="card-body">
-                  <table class="table">
-                     <thead>
-                        <tr>
-                           <th>ID</th>
-                           <th>Name</th>
-                           <th>Image</th>
-                           <th>Barcode</th>
-                           <th>Price</th>
-                           <th>Quantity</th>
-                           <th>Status</th>
-                           <th>Updated At</th>
-                           <!-- <th>Actions</th> -->
-                        </tr>
-                     </thead>
-                     <tbody>
-                        @foreach ($current_month_products as $product)
-                        <tr>
-                           <td>{{$product->id}}</td>
-                           <td>{{$product->name}}</td>
-                           <td><img class="product-img" src="{{ Storage::url($product->image) }}" alt=""></td>
-                           <td>{{$product->barcode}}</td>
-                           <td>{{$product->price}}</td>
-                           <td>{{$product->quantity}}</td>
-                           <td>
-                              <span class="right badge badge-{{ $product->status ? 'success' : 'danger' }}">{{$product->status ? __('common.Active') : __('common.Inactive') }}</span>
-                           </td>
-                           <td>{{$product->updated_at}}</td>
-                        </tr>
-                        @endforeach
-                     </tbody>
-                  </table>
-               </div>
-            </div>
-         </section>
-      </div>
+
+      {{-- HOT PRODUCTS (Last 6 Months) --}}
       <div class="col-6 my-4">
-         <h3>Hot Products of the year</h3>
+         <h3>Hot Products (Last 6 Months)</h3>
          <section class="content">
             <div class="card product-list">
                <div class="card-body">
                   <table class="table">
                      <thead>
                         <tr>
-                           <th>ID</th>
-                           <th>Name</th>
-                           <th>Image</th>
-                           <th>Barcode</th>
-                           <th>Price</th>
-                           <th>Quantity</th>
-                           <th>Status</th>
-                           <th>Updated At</th>
-                           <!-- <th>Actions</th> -->
+                           <th>ID Menu</th>
+                           <th>Nama Menu</th>
+                           <th>Harga</th>
+                           <th>Total Terjual</th>
+                           <th>Total Pendapatan</th>
                         </tr>
                      </thead>
                      <tbody>
-                        @foreach ($past_months_products as $product)
+                        @forelse ($hot_products as $product)
                         <tr>
-                           <td>{{$product->id}}</td>
-                           <td>{{$product->name}}</td>
-                           <td><img class="product-img" src="{{ Storage::url($product->image) }}" alt=""></td>
-                           <td>{{$product->barcode}}</td>
-                           <td>{{$product->price}}</td>
-                           <td>{{$product->quantity}}</td>
+                           <td>{{$product->id_menu}}</td>
+                           <td>{{$product->nama_menu}}</td>
+                           <td>{{config('settings.currency_symbol')}} {{number_format($product->harga, 0, ',', '.')}}</td>
                            <td>
-                              <span class="right badge badge-{{ $product->status ? 'success' : 'danger' }}">{{$product->status ? __('common.Active') : __('common.Inactive') }}</span>
+                              <span class="badge badge-primary">{{$product->total_terjual}}</span>
                            </td>
-                           <td>{{$product->updated_at}}</td>
+                           <td>{{config('settings.currency_symbol')}} {{number_format($product->total_pendapatan, 0, ',', '.')}}</td>
                         </tr>
-                        @endforeach
+                        @empty
+                        <tr>
+                           <td colspan="5" class="text-center">Belum ada data penjualan</td>
+                        </tr>
+                        @endforelse
                      </tbody>
                   </table>
                </div>
             </div>
          </section>
       </div>
+
+      {{-- BEST SELLING PRODUCTS (This Year) --}}
       <div class="col-6 my-4">
-         <h3>Best Selling Products</h3>
+         <h3>Best Selling Products (This Year)</h3>
          <section class="content">
             <div class="card product-list">
                <div class="card-body">
                   <table class="table">
                      <thead>
                         <tr>
-                           <th>ID</th>
-                           <th>Name</th>
-                           <th>Image</th>
-                           <th>Barcode</th>
-                           <th>Price</th>
-                           <th>Quantity</th>
-                           <th>Status</th>
-                           <th>Updated At</th>
-                           <!-- <th>Actions</th> -->
+                           <th>ID Menu</th>
+                           <th>Nama Menu</th>
+                           <th>Harga</th>
+                           <th>Total Terjual</th>
+                           <th>Total Pendapatan</th>
                         </tr>
                      </thead>
                      <tbody>
-                        @foreach ($best_selling_products as $product)
+                        @forelse ($best_selling_products as $product)
                         <tr>
-                           <td>{{$product->id}}</td>
-                           <td>{{$product->name}}</td>
-                           <td><img class="product-img" src="{{ Storage::url($product->image) }}" alt=""></td>
-                           <td>{{$product->barcode}}</td>
-                           <td>{{$product->price}}</td>
-                           <td>{{$product->quantity}}</td>
+                           <td>{{$product->id_menu}}</td>
+                           <td>{{$product->nama_menu}}</td>
+                           <td>{{config('settings.currency_symbol')}} {{number_format($product->harga, 0, ',', '.')}}</td>
                            <td>
-                              <span class="right badge badge-{{ $product->status ? 'success' : 'danger' }}">{{$product->status ? __('common.Active') : __('common.Inactive') }}</span>
+                              <span class="badge badge-success">{{$product->total_terjual}}</span>
                            </td>
-                           <td>{{$product->updated_at}}</td>
+                           <td>{{config('settings.currency_symbol')}} {{number_format($product->total_pendapatan, 0, ',', '.')}}</td>
                         </tr>
-                        @endforeach
+                        @empty
+                        <tr>
+                           <td colspan="5" class="text-center">Belum ada penjualan tahun ini</td>
+                        </tr>
+                        @endforelse
                      </tbody>
                   </table>
                </div>

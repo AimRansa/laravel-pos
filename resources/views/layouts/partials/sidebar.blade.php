@@ -11,18 +11,8 @@
 
     <!-- Sidebar -->
     <div class="sidebar">
-        <!-- Sidebar user (optional) -->
-        <div class="user-panel mt-3 pb-3 mb-3 d-flex">
-            <div class="image">
-                <img src="{{ auth()->user()->getAvatar() }}" class="img-circle elevation-2" alt="User Image">
-            </div>
-            <div class="info">
-                <a href="#" class="d-block">{{ auth()->user()->getFullname() }}</a>
-            </div>
-        </div>
-
         <!-- Sidebar Menu -->
-        <nav class="mt-2">
+        <nav class="mt-4">
             <ul class="nav nav-pills nav-sidebar flex-column text-center" role="menu">
 
                 {{-- Dashboard --}}
@@ -346,20 +336,5 @@
 
     .nav-link.logout i {
         color: #d9534f !important;
-    }
-
-    /* USER PANEL ENHANCEMENT */
-    .user-panel {
-        border-bottom: 1px solid rgba(35, 69, 52, 0.1);
-        padding-bottom: 16px !important;
-    }
-
-    .user-panel .image img {
-        transition: all 0.3s ease;
-    }
-
-    .user-panel:hover .image img {
-        transform: scale(1.05);
-        box-shadow: 0 4px 12px rgba(35, 69, 52, 0.2);
     }
 </style>

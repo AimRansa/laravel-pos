@@ -56,14 +56,11 @@ Route::prefix('admin')->middleware(['auth', 'locale'])->group(function () {
     });
 
     // ✅ Ganti bahasa
-    Route::get('/lang-switch/{lang}', function ($lang) {
-        $supportedLocales = ['en', 'es'];
-
-        if (in_array($lang, $supportedLocales)) {
-            session(['locale' => $lang]);
-            app()->setLocale($lang);
-        }
-
-        return redirect()->back();
-    })->name('lang.switch');
+    Route::get('lang/{lang}', function ($lang) {
+    if (in_array($lang, ['en', 'id'])) {
+        session(['locale' => $lang]);
+        app()->setLocale($lang);
+    }
+    return redirect()->back();
+})->name('lang.switch');
 });

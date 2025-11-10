@@ -2,25 +2,27 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Carbon\Carbon;
 
 class Product extends Model
 {
-    use HasFactory;
-
     protected $table = 'products';
-
-    // Kolom yang boleh diisi lewat create() / update()
+    protected $primaryKey = 'id';
+    
     protected $fillable = [
         'id_produk',
-        'tanggal_masuk',
-        'tanggal_expired',
         'nama_stok',
         'jumlah_stok',
         'satuan',
+        'tanggal_masuk',
+        'tanggal_expired',
     ];
 
-    // (Opsional) kalau kamu tidak mau pakai timestamps otomatis
-    // public $timestamps = false;
+    // PENTING: Cast tanggal ke Carbon instance
+    protected $casts = [
+        'tanggal_masuk' => 'date',
+        'tanggal_expired' => 'date',
+        'jumlah_stok' => 'integer',
+    ];
 }

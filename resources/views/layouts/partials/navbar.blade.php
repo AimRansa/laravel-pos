@@ -15,20 +15,7 @@
     <!-- Right navbar links -->
     <ul class="navbar-nav ml-auto">
 
-        <!-- Language Switcher -->
-        <li class="nav-item dropdown">
-            <a class="nav-link nav-link-custom" data-toggle="dropdown" href="#">
-                <i class="fas fa-globe"></i> {{ strtoupper(app()->getLocale()) }}
-            </a>
-            <div id="switchLang" class="dropdown-menu dropdown-menu-right custom-dropdown">
-                <a href="{{ route('lang.switch', ['lang' => 'en']) }}" class="dropdown-item custom-dropdown-item">
-                    <i class="fas fa-flag-usa mr-2"></i> English
-                </a>
-                <a href="{{ route('lang.switch', ['lang' => 'es']) }}" class="dropdown-item custom-dropdown-item">
-                    <i class="fas fa-flag mr-2"></i> Español
-                </a>
-            </div>
-        </li>
+        
 
         <!-- User Account Dropdown -->
         <li class="nav-item dropdown">
@@ -36,10 +23,6 @@
                 <i class="fas fa-user-circle"></i> {{ auth()->user()->getFullname() }}
             </a>
             <div class="dropdown-menu dropdown-menu-right custom-dropdown">
-                <a href="{{ route('settings.index') }}" class="dropdown-item custom-dropdown-item">
-                    <i class="nav-icon fas fa-cogs mr-2"></i> {{ __('settings.title') }}
-                </a>
-                <div class="dropdown-divider"></div>
                 <a href="{{ route('logout') }}" class="dropdown-item custom-dropdown-item logout-item"
                    onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                     <i class="fas fa-sign-out-alt mr-2"></i> {{ __('common.Logout') }}

@@ -8,7 +8,8 @@
 
   <form method="POST" action="{{ route('login') }}">
       @csrf
-      <input type="text" name="username" placeholder="Username" required autofocus>
+      <!-- Ubah name="username" jadi name="email" agar Laravel Auth bisa membaca -->
+      <input type="text" name="email" placeholder="Username" required autofocus>
       <input type="password" name="password" placeholder="Password" required>
       <button type="submit">Login</button>
   </form>

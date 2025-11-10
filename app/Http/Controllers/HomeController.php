@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Order;
-// use App\Models\Customer;
 use App\Models\Product;
 use Illuminate\Support\Facades\DB;
 
@@ -11,8 +10,6 @@ class HomeController extends Controller
 {
     /**
      * Create a new controller instance.
-     *
-     * @return void
      */
     public function __construct()
     {
@@ -21,15 +18,20 @@ class HomeController extends Controller
 
     /**
      * Show the application dashboard.
-     *
-     * @return \Illuminate\Contracts\Support\Renderable
      */
     public function index()
     {
+        // Ambil semua data order
         $orders = Order::all();
-        // $customers_count = Customer::count();
-        $low_stock_products = Product::where('quantity', '<', 10)->get();
 
+        // Jika sudah tidak pakai kolom quantity, hapus atau sesuaikan di sini.
+        // Misalnya kamu pakai kolom "stok" atau "stock":
+        // $low_stock_products = Product::where('stok', '<', 10)->get();
+
+        // Kalau tidak pakai sistem stok sama sekali:
+        $low_stock_products = collect([]);
+
+        // Placeholder untuk produk terlaris & lainnya
         $bestSellingProducts = collect([]);
         $currentMonthBestSelling = collect([]);
         $pastSixMonthsHotProducts = collect([]);
@@ -38,7 +40,6 @@ class HomeController extends Controller
             'orders_count' => $orders->count(),
             'income' => $orders->sum('total'),
             'income_today' => $orders->where('created_at', '>=', date('Y-m-d') . ' 00:00:00')->sum('total'),
-            // 'customers_count' => $customers_count,
             'low_stock_products' => $low_stock_products,
             'best_selling_products' => $bestSellingProducts,
             'current_month_products' => $currentMonthBestSelling,
@@ -46,4 +47,3 @@ class HomeController extends Controller
         ]);
     }
 }
-

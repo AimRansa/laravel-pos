@@ -23,15 +23,18 @@ class RegisterController extends Controller
      */
     public function register(Request $request)
     {
-        // Validasi input
+        // ✅ Validasi input (dengan pesan custom)
         $request->validate([
             'first_name' => 'required|string|max:255',
             'last_name'  => 'required|string|max:255',
-            'email'      => 'required|string|email|max:255|unique:users',
+            'email'      => 'required|string|email|max:255|unique:users,email',
             'password'   => 'required|string|min:8|confirmed',
+        ], [
+            'email.unique' => 'Email sudah digunakan, silakan gunakan email lain.',
+            'password.confirmed' => 'Konfirmasi password tidak cocok.',
         ]);
 
-        // Buat user baru
+        // ✅ Buat user baru
         User::create([
             'first_name' => $request->first_name,
             'last_name'  => $request->last_name,
@@ -39,7 +42,7 @@ class RegisterController extends Controller
             'password'   => Hash::make($request->password),
         ]);
 
-        // Redirect ke halaman login dengan pesan sukses
+        // ✅ Redirect ke login dengan notifikasi sukses
         return redirect()->route('login')->with('success', 'Registrasi berhasil! Silakan login.');
     }
 }

@@ -32,13 +32,18 @@
         </div>
 
         <div class="mb-3">
-            <label>Tanggal Masuk</label>
-            <input type="date" name="tanggal_masuk" value="{{ $product->tanggal_masuk }}" class="form-control" required>
+            <label>Nama Produk</label>
+            <input type="text" name="nama_stok" value="{{ $product->nama_stok }}" class="form-control" required>
         </div>
 
         <div class="mb-3">
-            <label>Tanggal Keluar</label>
-            <input type="date" name="tanggal_keluar" value="{{ $product->tanggal_keluar }}" class="form-control" required>
+            <label>Jumlah Stok</label>
+            <input type="number" name="jumlah_stok" value="{{ $product->jumlah_stok }}" class="form-control" min="0" required>
+        </div>
+
+        <div class="mb-3">
+            <label>Tanggal Masuk</label>
+            <input type="date" name="tanggal_masuk" value="{{ $product->tanggal_masuk }}" class="form-control" required>
         </div>
 
         <div class="mb-3">

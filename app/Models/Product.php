@@ -18,6 +18,7 @@ class Product extends Model
         'tanggal_expired',
         'nama_stok',
         'jumlah_stok',
+        'satuan',
     ];
 
     // (Opsional) kalau kamu tidak mau pakai timestamps otomatis

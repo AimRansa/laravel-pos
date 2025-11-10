@@ -40,11 +40,19 @@ class ProductController extends Controller
             'id_produk' => 'required|string|max:3|unique:products,id_produk',
             'nama_stok' => 'required|string|max:255',
             'jumlah_stok' => 'required|integer|min:0',
+            'satuan' => 'required|string|max:50',
             'tanggal_masuk' => 'required|date',
             'tanggal_expired' => 'required|date|after_or_equal:tanggal_masuk',
         ]);
 
-        Product::create($request->only(['id_produk', 'nama_stok', 'jumlah_stok', 'tanggal_masuk', 'tanggal_expired']));
+        Product::create($request->only([
+            'id_produk',
+            'nama_stok',
+            'jumlah_stok',
+            'satuan',
+            'tanggal_masuk',
+            'tanggal_expired'
+        ]));
 
         return redirect()->route('products.index')->with('success', '✅ Data stok berhasil ditambahkan!');
     }
@@ -59,11 +67,18 @@ class ProductController extends Controller
         $request->validate([
             'nama_stok' => 'required|string|max:255',
             'jumlah_stok' => 'required|integer|min:0',
+            'satuan' => 'required|string|max:50',
             'tanggal_masuk' => 'required|date',
             'tanggal_expired' => 'required|date|after_or_equal:tanggal_masuk',
         ]);
 
-        $product->update($request->only(['nama_stok', 'jumlah_stok', 'tanggal_masuk', 'tanggal_expired']));
+        $product->update($request->only([
+            'nama_stok',
+            'jumlah_stok',
+            'satuan',
+            'tanggal_masuk',
+            'tanggal_expired'
+        ]));
 
         return redirect()->route('products.index')->with('success', '✅ Data stok berhasil diperbarui!');
     }

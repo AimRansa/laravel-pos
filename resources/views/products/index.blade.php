@@ -16,6 +16,7 @@
                 <th>ID Produk</th>
                 <th>Nama Produk</th>
                 <th>Jumlah Stok</th>
+                <th>Satuan</th>
                 <th>Tanggal Masuk</th>
                 <th>Tanggal Expired</th>
                 <th>Aksi</th>
@@ -27,6 +28,7 @@
                 <td>{{ $product->id_produk }}</td>
                 <td>{{ $product->nama_stok }}</td>
                 <td>{{ $product->jumlah_stok }}</td>
+                <td>{{ $product->satuan }}</td>
                 <td>{{ $product->tanggal_masuk }}</td>
                 <td>{{ $product->tanggal_expired }}</td>
                 <td>

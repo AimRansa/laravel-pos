@@ -42,6 +42,18 @@
         </div>
 
         <div class="mb-3">
+            <label for="satuan">Satuan</label>
+            <select name="satuan" id="satuan" class="form-control" required>
+                <option value="">-- Pilih Satuan --</option>
+                <option value="pcs" {{ $product->satuan == 'pcs' ? 'selected' : '' }}>pcs</option>
+                <option value="kg" {{ $product->satuan == 'kg' ? 'selected' : '' }}>kg</option>
+                <option value="liter" {{ $product->satuan == 'liter' ? 'selected' : '' }}>liter</option>
+                <option value="pack" {{ $product->satuan == 'pack' ? 'selected' : '' }}>pack</option>
+                <option value="dus" {{ $product->satuan == 'dus' ? 'selected' : '' }}>dus</option>
+            </select>
+        </div>
+        
+        <div class="mb-3">
             <label>Tanggal Masuk</label>
             <input type="date" name="tanggal_masuk" value="{{ $product->tanggal_masuk }}" class="form-control" required>
         </div>

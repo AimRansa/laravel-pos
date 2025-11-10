@@ -23,6 +23,31 @@
                             'warning_quantity' => config('settings.warning_quantity')
                         ]) ?>
     </script>
+
+    <!-- ✅ CUSTOM BACKGROUND STYLE -->
+    <style>
+        /* Background untuk seluruh halaman admin */
+        body {
+            background-color: #E5E5E5 !important;
+        }
+
+        /* Background untuk content area */
+        .content-wrapper {
+            background-color: #E5E5E5 !important;
+        }
+
+        /* Optional: Biar card/table lebih kontras dengan background */
+        .card,
+        .table {
+            background-color: #ffffff;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        /* Optional: Alert boxes tetap terlihat jelas */
+        .alert {
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        }
+    </style>
 </head>
 
 <body class="hold-transition sidebar-mini">

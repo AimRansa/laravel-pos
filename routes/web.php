@@ -10,6 +10,7 @@ use App\Http\Controllers\SettingController;
 use App\Http\Controllers\SupplierController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\CsvController;
 
 
 Route::get('/', function () {
@@ -34,6 +35,10 @@ Route::prefix('admin')->middleware(['auth', 'locale'])->group(function () {
 
     //lapran 
     Route::get('/admin/laporan', [App\Http\Controllers\SettingController::class, 'index'])->name('laporan.index');
+
+    ///csv 
+    Route::get('/upload-csv', [CsvController::class, 'showForm'])->name('csv.upload.form');
+    Route::post('/upload-csv', [CsvController::class, 'upload'])->name('csv.upload.process');
 
     // ✅ Tambahan fungsi Cart
     Route::post('/cart/change-qty', [CartController::class, 'changeQty'])->name('cart.changeQty');

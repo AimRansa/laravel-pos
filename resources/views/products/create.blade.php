@@ -33,13 +33,18 @@
         </div>
 
         <div class="mb-3">
-            <label>Tanggal Masuk</label>
-            <input type="date" name="tanggal_masuk" value="{{ old('tanggal_masuk') }}" class="form-control" required>
+            <label>Nama Stok</label>
+            <input type="text" name="nama_stok" value="{{ old('nama_stok') }}" class="form-control" required>
         </div>
 
         <div class="mb-3">
-            <label>Tanggal Keluar</label>
-            <input type="date" name="tanggal_keluar" value="{{ old('tanggal_keluar') }}" class="form-control" required>
+            <label>Jumlah Stok</label>
+            <input type="number" name="jumlah_stok" value="{{ old('jumlah_stok') }}" class="form-control" min="0" required>
+        </div>
+
+        <div class="mb-3">
+            <label>Tanggal Masuk</label>
+            <input type="date" name="tanggal_masuk" value="{{ old('tanggal_masuk') }}" class="form-control" required>
         </div>
 
         <div class="mb-3">
@@ -47,7 +52,7 @@
             <input type="date" name="tanggal_expired" value="{{ old('tanggal_expired') }}" class="form-control" required>
         </div>
 
-        <button class="btn btn-success">Simpan</button>
+        <button type="submit" class="btn btn-success">Simpan</button>
         <a href="{{ route('products.index') }}" class="btn btn-secondary">Kembali</a>
     </form>
 </div>

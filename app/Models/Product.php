@@ -15,8 +15,9 @@ class Product extends Model
     protected $fillable = [
         'id_produk',
         'tanggal_masuk',
-        'tanggal_keluar',
         'tanggal_expired',
+        'nama_stok',
+        'jumlah_stok',
     ];
 
     // (Opsional) kalau kamu tidak mau pakai timestamps otomatis

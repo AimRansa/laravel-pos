@@ -5,7 +5,7 @@
     <h3 class="mb-3">Stock</h3>
 
     <form action="{{ route('products.index') }}" method="GET" class="mb-3">
-        <input type="text" name="search" class="form-control w-25 d-inline" placeholder="Cari ID Produk..." value="{{ request('search') }}">
+        <input type="text" name="search" class="form-control w-25 d-inline" placeholder="Cari produk..." value="{{ request('search') }}">
         <button class="btn btn-primary">Cari</button>
         <a href="{{ route('products.create') }}" class="btn btn-success float-end">+ Tambah Produk</a>
     </form>
@@ -14,7 +14,8 @@
         <thead>
             <tr>
                 <th>ID Produk</th>
-                <th>Tanggal Keluar</th>
+                <th>Nama Produk</th>
+                <th>Jumlah Stok</th>
                 <th>Tanggal Masuk</th>
                 <th>Tanggal Expired</th>
                 <th>Aksi</th>
@@ -24,7 +25,8 @@
             @forelse ($products as $product)
             <tr>
                 <td>{{ $product->id_produk }}</td>
-                <td>{{ $product->tanggal_keluar }}</td>
+                <td>{{ $product->nama_stok }}</td>
+                <td>{{ $product->jumlah_stok }}</td>
                 <td>{{ $product->tanggal_masuk }}</td>
                 <td>{{ $product->tanggal_expired }}</td>
                 <td>
@@ -41,7 +43,7 @@
             </tr>
             @empty
             <tr>
-                <td colspan="5" class="text-center">Tidak ada data stok</td>
+                <td colspan="6" class="text-center">Tidak ada data stok</td>
             </tr>
             @endforelse
         </tbody>

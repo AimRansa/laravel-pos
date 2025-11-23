@@ -11,7 +11,6 @@ class Cart extends Model
     protected $fillable = [
         'id_menu',
         'nama_menu',
-        'takaran',
         'harga',
     ];
 
@@ -23,5 +22,10 @@ class Cart extends Model
     public function orderDetails()
     {
         return $this->hasMany(DetailPesanan::class, 'id_menu', 'id_menu');
+    }
+    // Relasi ke tabel resep
+    public function resep()
+    {
+        return $this->hasMany(ResepMenu::class, 'id_menu', 'id_menu');
     }
 }

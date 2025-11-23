@@ -5,60 +5,37 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>@yield('title', config('app.name'))</title>
-    <!-- Tell the browser to be responsive to screen width -->
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <!-- Ionicons -->
-    <!-- <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css"> -->
-    <!-- overlayScrollbars -->
-    <!-- <link rel="stylesheet" href="{{ asset('css/app.css') }}"> -->
-    <!-- Google Font: Source Sans Pro -->
+
     <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
-
-
     @vite(['resources/sass/app.scss', 'resources/js/app.js'])
     @yield('css')
-    <script>
-        window.APP = <?php echo json_encode([
-                            'currency_symbol' => config('settings.currency_symbol'),
-                            'warning_quantity' => config('settings.warning_quantity')
-                        ]) ?>
-    </script>
 
-    <!-- ✅ CUSTOM BACKGROUND STYLE -->
+    <!-- Custom Background -->
     <style>
-        /* Background untuk seluruh halaman admin */
         body {
             background-color: #E5E5E5 !important;
         }
-
-        /* Background untuk content area */
         .content-wrapper {
             background-color: #E5E5E5 !important;
         }
-
-        /* Optional: Biar card/table lebih kontras dengan background */
-        .card,
-        .table {
+        .card, .table {
             background-color: #ffffff;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
         }
-
-        /* Optional: Alert boxes tetap terlihat jelas */
         .alert {
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
         }
     </style>
 </head>
 
 <body class="hold-transition sidebar-mini">
-    <!-- Site wrapper -->
-    <div class="wrapper">
 
+    <div class="wrapper">
         @include('layouts.partials.navbar')
         @include('layouts.partials.sidebar')
-        <!-- Content Wrapper. Contains page content -->
+
         <div class="content-wrapper">
-            <!-- Content Header (Page header) -->
             <section class="content-header">
                 <div class="container-fluid">
                     <div class="row mb-2">
@@ -67,35 +44,56 @@
                         </div>
                         <div class="col-sm-6 text-right">
                             @yield('content-actions')
-                        </div><!-- /.col -->
+                        </div>
                     </div>
-                </div><!-- /.container-fluid -->
+                </div>
             </section>
 
-            <!-- Main content -->
             <section class="content">
                 @include('layouts.partials.alert.success')
                 @include('layouts.partials.alert.error')
                 @yield('content')
             </section>
-
         </div>
-        <!-- /.content-wrapper -->
 
         @include('layouts.partials.footer')
-
-        <!-- Control Sidebar -->
-        <aside class="control-sidebar control-sidebar-dark">
-            <!-- Control sidebar content goes here -->
-        </aside>
-        <!-- /.control-sidebar -->
     </div>
-    <!-- ./wrapper -->
-    <!-- <script src="{{ asset('js/app.js') }}"></script> -->
-
 
     @yield('js')
     @yield('model')
-</body>
 
+    <!-- ========================================== -->
+    <!-- ✅ SWEETALERT2 (MODERN DELETE CONFIRMATION) -->
+    <!-- ========================================== -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+            const deleteForms = document.querySelectorAll(".delete-form");
+
+            deleteForms.forEach(form => {
+                form.addEventListener("submit", function (e) {
+                    e.preventDefault();
+
+                    Swal.fire({
+                        title: "Hapus Produk?",
+                        text: "Apa kamu yakin ingin menghapus produk ini?",
+                        icon: "warning",
+                        showCancelButton: true,
+                        confirmButtonText: "Ya, Hapus",
+                        cancelButtonText: "Batal",
+                        confirmButtonColor: "#d33",
+                        cancelButtonColor: "#3085d6",
+                    }).then((result) => {
+                        if (result.isConfirmed) form.submit();
+                    });
+                });
+            });
+
+        });
+    </script>
+
+
+</body>
 </html>

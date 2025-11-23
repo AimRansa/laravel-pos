@@ -28,39 +28,47 @@
 
         <div class="mb-3">
             <label>ID Produk</label>
-            <input type="text" class="form-control" value="{{ $product->id_produk }}" readonly maxlength="3">
+            <input type="text" class="form-control"
+                   value="{{ $product->id_produk }}" readonly maxlength="3">
         </div>
 
         <div class="mb-3">
             <label>Nama Produk</label>
-            <input type="text" name="nama_stok" value="{{ $product->nama_stok }}" class="form-control" required>
+            <input type="text" name="nama_stok"
+                   value="{{ $product->nama_stok }}"
+                   class="form-control" required>
         </div>
 
         <div class="mb-3">
             <label>Jumlah Stok</label>
-            <input type="number" name="jumlah_stok" value="{{ $product->jumlah_stok }}" class="form-control" min="0" required>
+            <input type="number" name="jumlah_stok"
+                   value="{{ $product->jumlah_stok }}"
+                   class="form-control" min="0" required>
         </div>
 
         <div class="mb-3">
             <label for="satuan">Satuan</label>
             <select name="satuan" id="satuan" class="form-control" required>
-                <option value="">-- Pilih Satuan --</option>
-                <option value="pcs" {{ $product->satuan == 'pcs' ? 'selected' : '' }}>pcs</option>
-                <option value="kg" {{ $product->satuan == 'kg' ? 'selected' : '' }}>kg</option>
+                <option value="pcs"   {{ $product->satuan == 'pcs' ? 'selected' : '' }}>pcs</option>
+                <option value="kg"    {{ $product->satuan == 'kg' ? 'selected' : '' }}>kg</option>
                 <option value="liter" {{ $product->satuan == 'liter' ? 'selected' : '' }}>liter</option>
-                <option value="pack" {{ $product->satuan == 'pack' ? 'selected' : '' }}>pack</option>
-                <option value="dus" {{ $product->satuan == 'dus' ? 'selected' : '' }}>dus</option>
+                <option value="pack"  {{ $product->satuan == 'pack' ? 'selected' : '' }}>pack</option>
+                <option value="dus"   {{ $product->satuan == 'dus' ? 'selected' : '' }}>dus</option>
             </select>
         </div>
-        
+
         <div class="mb-3">
             <label>Tanggal Masuk</label>
-            <input type="date" name="tanggal_masuk" value="{{ $product->tanggal_masuk }}" class="form-control" required>
+            <input type="date" name="tanggal_masuk"
+                value="{{ \Carbon\Carbon::parse($product->tanggal_masuk)->format('Y-m-d') }}"
+                class="form-control" required>
         </div>
 
         <div class="mb-3">
             <label>Tanggal Expired</label>
-            <input type="date" name="tanggal_expired" value="{{ $product->tanggal_expired }}" class="form-control" required>
+            <input type="date" name="tanggal_expired"
+                value="{{ \Carbon\Carbon::parse($product->tanggal_expired)->format('Y-m-d') }}"
+                class="form-control" required>
         </div>
 
         <button type="submit" class="btn btn-primary">Update</button>

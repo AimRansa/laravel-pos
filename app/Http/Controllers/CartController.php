@@ -39,13 +39,11 @@ class CartController extends Controller
     {
         $request->validate([
             'nama_menu' => 'required|string|max:100',
-            'takaran' => 'required|string|max:50',
             'harga' => 'required|numeric|min:0',
         ]);
 
         $cart->update([
             'nama_menu' => $request->nama_menu,
-            'takaran' => $request->takaran,
             'harga' => $request->harga,
         ]);
 

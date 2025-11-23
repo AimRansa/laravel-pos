@@ -14,7 +14,7 @@ class OrderController extends Controller
         $orders = Order::when($search, function($query, $search) {
                 return $query->where('idtransaksi', 'like', "%{$search}%");
             })
-            ->orderBy('tanggal_transaksi', 'desc')
+            ->orderBy('idtransaksi', 'asc')
             ->paginate(10);
 
         return view('orders.index', compact('orders'));

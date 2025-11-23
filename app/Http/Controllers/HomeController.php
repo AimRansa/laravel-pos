@@ -34,12 +34,12 @@ class HomeController extends Controller
             ->limit(10)
             ->get();
 
-        // 5. HOT PRODUCTS (Produk paling laris 6 bulan terakhir)
+        // 5. HOT PRODUCTS (6 bulan terakhir)
         $six_months_ago = Carbon::now()->subMonths(6)->format('Y-m-d');
         
         $hot_products = DetailPesanan::select(
                 'detail_pesanan.id_menu',
-                'detail_pesanan.nama_menu',
+                'cart.nama_menu',
                 DB::raw('SUM(detail_pesanan.quantity) as total_terjual'),
                 DB::raw('SUM(detail_pesanan.subtotal) as total_pendapatan'),
                 'cart.harga',
@@ -48,17 +48,17 @@ class HomeController extends Controller
             ->join('orders', 'detail_pesanan.idtransaksi', '=', 'orders.idtransaksi')
             ->join('cart', 'detail_pesanan.id_menu', '=', 'cart.id_menu')
             ->where('orders.tanggal_transaksi', '>=', $six_months_ago)
-            ->groupBy('detail_pesanan.id_menu', 'detail_pesanan.nama_menu', 'cart.harga', 'cart.takaran')
+            ->groupBy('detail_pesanan.id_menu', 'cart.nama_menu', 'cart.harga', 'cart.takaran')
             ->orderBy('total_terjual', 'desc')
             ->limit(5)
             ->get();
 
-        // 6. BEST SELLING PRODUCTS OF THE YEAR
+        // 6. BEST SELLING PRODUCTS (year)
         $current_year = Carbon::now()->year;
         
         $best_selling_products = DetailPesanan::select(
                 'detail_pesanan.id_menu',
-                'detail_pesanan.nama_menu',
+                'cart.nama_menu',
                 DB::raw('SUM(detail_pesanan.quantity) as total_terjual'),
                 DB::raw('SUM(detail_pesanan.subtotal) as total_pendapatan'),
                 'cart.harga',
@@ -67,7 +67,7 @@ class HomeController extends Controller
             ->join('orders', 'detail_pesanan.idtransaksi', '=', 'orders.idtransaksi')
             ->join('cart', 'detail_pesanan.id_menu', '=', 'cart.id_menu')
             ->whereYear('orders.tanggal_transaksi', $current_year)
-            ->groupBy('detail_pesanan.id_menu', 'detail_pesanan.nama_menu', 'cart.harga', 'cart.takaran')
+            ->groupBy('detail_pesanan.id_menu', 'cart.nama_menu', 'cart.harga', 'cart.takaran')
             ->orderBy('total_terjual', 'desc')
             ->limit(5)
             ->get();
@@ -77,13 +77,14 @@ class HomeController extends Controller
         
         $current_month_products = DetailPesanan::select(
                 'detail_pesanan.id_menu',
-                'detail_pesanan.nama_menu',
+                'cart.nama_menu',
                 DB::raw('SUM(detail_pesanan.quantity) as total_terjual'),
                 DB::raw('SUM(detail_pesanan.subtotal) as total_pendapatan')
             )
             ->join('orders', 'detail_pesanan.idtransaksi', '=', 'orders.idtransaksi')
+            ->join('cart', 'detail_pesanan.id_menu', '=', 'cart.id_menu')
             ->where('orders.tanggal_transaksi', 'like', $current_month . '%')
-            ->groupBy('detail_pesanan.id_menu', 'detail_pesanan.nama_menu')
+            ->groupBy('detail_pesanan.id_menu', 'cart.nama_menu')
             ->orderBy('total_terjual', 'desc')
             ->limit(5)
             ->get();

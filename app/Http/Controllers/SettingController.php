@@ -17,7 +17,7 @@ class SettingController extends Controller
         }
 
         // Ambil data laporan
-        $laporan = $query->orderBy('tanggal_laporan', 'desc')->get();
+        $laporan = $query->orderBy('tanggal_laporan', 'asc')->get();
 
         return view('settings.laporan', compact('laporan'));
     }

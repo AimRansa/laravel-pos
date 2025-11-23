@@ -30,11 +30,6 @@
         </div>
 
         <div class="mb-3">
-            <label>Takaran</label>
-            <input type="text" name="takaran" class="form-control" value="{{ old('takaran') }}" required>
-        </div>
-
-        <div class="mb-3">
             <label>Harga</label>
             <input type="number" name="harga" class="form-control" value="{{ old('harga') }}" required>
         </div>

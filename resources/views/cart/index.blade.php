@@ -28,7 +28,6 @@
             <tr>
                 <th>ID Menu</th>
                 <th>Nama Menu</th>
-                <th>Takaran</th>
                 <th>Harga</th>
                 <th>Aksi</th>
             </tr>
@@ -38,11 +37,14 @@
                 <tr>
                     <td>{{ $cart->id_menu }}</td>
                     <td>{{ $cart->nama_menu }}</td>
-                    <td>{{ $cart->takaran }}</td>
                     <td>Rp {{ number_format($cart->harga, 0, ',', '.') }}</td>
                     <td>
                         <a href="{{ route('cart.edit', $cart->id) }}" class="btn btn-warning btn-sm">Edit</a>
                         {{-- 🔒 Tombol hapus dihapus --}}
+                        <a href="{{ route('resep.index', $cart->id_menu) }}" 
+                            class="btn btn-primary btn-sm mt-1">
+                            Kelola Resep
+                        </a>
                     </td>
                 </tr>
             @empty

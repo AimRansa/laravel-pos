@@ -29,15 +29,19 @@
                 <td>{{ $product->nama_stok }}</td>
                 <td>{{ $product->jumlah_stok }}</td>
                 <td>{{ $product->satuan }}</td>
-                <td>{{ $product->tanggal_masuk }}</td>
-                <td>{{ $product->tanggal_expired }}</td>
+                <td>{{ \Carbon\Carbon::parse($product->tanggal_masuk)->format('Y-m-d') }}</td>
+                <td>{{ \Carbon\Carbon::parse($product->tanggal_expired)->format('Y-m-d') }}</td>
+
                 <td>
                     <a href="{{ route('products.edit', $product->id) }}" class="btn btn-warning btn-sm">
                         <i class="fas fa-edit"></i>
                     </a>
-                    <form action="{{ route('products.destroy', $product->id) }}" method="POST" style="display:inline;">
+
+                    <form action="{{ route('products.destroy', $product->id) }}" method="POST"
+                        class="delete-form" style="display:inline;">
                         @csrf @method('DELETE')
-                        <button class="btn btn-danger btn-sm" onclick="return confirm('Yakin hapus data ini?')">
+
+                        <button type="submit" class="btn btn-danger btn-sm">
                             <i class="fas fa-trash"></i>
                         </button>
                     </form>
@@ -45,7 +49,7 @@
             </tr>
             @empty
             <tr>
-                <td colspan="6" class="text-center">Tidak ada data stok</td>
+                <td colspan="7" class="text-center">Tidak ada data stok</td>
             </tr>
             @endforelse
         </tbody>

@@ -12,16 +12,17 @@ class CartController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Cart::query();
+    $query = Cart::query();
 
-        if ($request->search) {
-            $query->where('id_menu', 'like', "%{$request->search}%")
-                  ->orWhere('nama_menu', 'like', "%{$request->search}%");
-        }
+    if ($request->search) {
+        $query->where('id_menu', 'like', "%{$request->search}%")
+              ->orWhere('nama_menu', 'like', "%{$request->search}%");
+    }
 
-        $carts = $query->latest()->paginate(10);
+    // Urutkan sesuai id_menu (M01, M02, ...)
+    $carts = $query->orderBy('id_menu', 'asc')->paginate(10);
 
-        return view('cart.index', compact('carts'));
+    return view('cart.index', compact('carts'));
     }
 
     /**

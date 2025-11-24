@@ -3,6 +3,8 @@
 @section('content')
 <div class="container">
 
+    <a href="{{ route('cart.index') }}" class="btn btn-secondary mb-3">← Kembali</a>
+
     <h3>Resep Menu: {{ $menu->nama_menu }}</h3>
 
     @if(session('success'))

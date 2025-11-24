@@ -2,23 +2,46 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Models\Setting;
+use App\Models\Laporan;
+use App\Models\LaporanDetail;
+use App\Models\LaporanStok;
 
 class SettingController extends Controller
 {
-    public function index(Request $request)
+    public function index()
     {
-        $query = Setting::query();
+        $laporans = Laporan::orderBy('id_laporan', 'desc')->get();
 
-        // Filter tanggal laporan
-        if ($request->filled('tanggal_laporan')) {
-            $query->whereDate('tanggal_laporan', $request->tanggal_laporan);
-        }
+        return view('settings.laporan', [
+            'laporans' => $laporans
+        ]);
+    }
 
-        // Ambil data laporan
-        $laporan = $query->orderBy('tanggal_laporan', 'asc')->get();
+    public function show($id)
+    {
+        $laporan = Laporan::where('id_laporan', $id)->firstOrFail();
 
-        return view('settings.laporan', compact('laporan'));
+        $detail = LaporanDetail::where('laporan_id', $id)->get();
+        $stok = LaporanStok::where('laporan_id', $id)->get();
+
+        return view('settings.laporan_show', [
+            'laporan' => $laporan,
+            'detail'  => $detail,
+            'stok'    => $stok
+        ]);
+    }
+
+    public function print($id)
+    {
+        $laporan = Laporan::where('id_laporan', $id)->firstOrFail();
+
+        $detail = LaporanDetail::where('laporan_id', $id)->get();
+        $stok = LaporanStok::where('laporan_id', $id)->get();
+
+        return view('settings.laporan_print', [
+            'laporan' => $laporan,
+            'detail'  => $detail,
+            'stok'    => $stok
+        ]);
     }
 }

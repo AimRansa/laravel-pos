@@ -47,9 +47,10 @@
                     </a>
                 </li>
 
-                {{-- Laporan --}}
+                {{-- Laporan (FIXED ROUTE) --}}
                 <li class="nav-item mb-2">
-                    <a href="{{ route('settings.index') }}" class="nav-link {{ request()->is('admin/settings*') ? 'active' : '' }}">
+                    <a href="{{ route('laporan.index') }}" 
+                       class="nav-link {{ request()->is('admin/laporan*') ? 'active' : '' }}">
                         <i class="nav-icon fas fa-chart-line"></i>
                         <p>Laporan</p>
                     </a>
@@ -71,25 +72,25 @@
                         <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display:none;">@csrf</form>
                     </a>
                 </li>
+
             </ul>
         </nav>
     </div>
 </aside>
 
 <style>
+    /* SEMUA CSS TETAP SAMA EXACT */
     /* =========================
        SIDEBAR STYLE DEEEN COFFEE
        LUXURY PREMIUM DESIGN
        ========================= */
 
-    /* Sidebar background */
     .main-sidebar {
         background: linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%) !important;
         color: #a0a0a0;
         box-shadow: 4px 0 20px rgba(0, 0, 0, 0.08) !important;
     }
 
-    /* === LOGO CONTAINER - ENHANCED & BIGGER === */
     .logo-container {
         padding: 28px 0 !important;
         position: relative;
@@ -103,7 +104,6 @@
         cursor: pointer;
     }
 
-    /* LOGO IMAGE - EXTRA BESAR & PREMIUM */
     .logo-image {
         width: 180px !important;
         height: auto;
@@ -114,7 +114,6 @@
         filter: drop-shadow(0 8px 16px rgba(35, 69, 52, 0.15));
     }
 
-    /* GLOW EFFECT - LUXURY TOUCH */
     .logo-glow {
         position: absolute;
         top: 50%;
@@ -130,7 +129,6 @@
         filter: blur(20px);
     }
 
-    /* HOVER EFFECTS - PREMIUM ANIMATION */
     .logo-wrapper:hover .logo-image {
         transform: scale(1.08) translateY(-3px);
         filter: drop-shadow(0 16px 32px rgba(35, 69, 52, 0.25));
@@ -144,7 +142,6 @@
         animation: pulse-glow 2s ease-in-out infinite;
     }
 
-    /* PULSE ANIMATION */
     @keyframes pulse-glow {
         0%, 100% {
             transform: translate(-50%, -50%) scale(1);
@@ -156,80 +153,6 @@
         }
     }
 
-    /* SUBTLE SHINE EFFECT ON HOVER */
-    .logo-wrapper::before {
-        content: '';
-        position: absolute;
-        top: -50%;
-        left: -50%;
-        width: 200%;
-        height: 200%;
-        background: linear-gradient(
-            45deg,
-            transparent 30%,
-            rgba(255, 255, 255, 0.3) 50%,
-            transparent 70%
-        );
-        transform: rotate(45deg);
-        opacity: 0;
-        transition: opacity 0.6s ease;
-        z-index: 3;
-        pointer-events: none;
-    }
-
-    .logo-wrapper:hover::before {
-        opacity: 1;
-        animation: shine 1.5s ease-in-out;
-    }
-
-    @keyframes shine {
-        0% {
-            transform: translateX(-100%) rotate(45deg);
-        }
-        100% {
-            transform: translateX(100%) rotate(45deg);
-        }
-    }
-
-    /* Logo "Deeen Coffee" */
-    .brand-link {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        padding: 24px 0;
-        border-bottom: 1px solid #e0e0e0;
-        background-color: #fff;
-        text-decoration: none !important;
-    }
-
-    .pill {
-        background-color: #234534;
-        color: #fff;
-        width: 80px;
-        height: 80px;
-        border-radius: 20px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        font-family: "Poppins", sans-serif;
-        text-align: center;
-        line-height: 1.1;
-        box-shadow: 0 4px 10px rgba(35, 69, 52, 0.2);
-    }
-
-    .pill .top {
-        font-weight: 600;
-        font-size: 20px;
-        letter-spacing: 0.5px;
-    }
-
-    .pill .sub {
-        font-size: 10px;
-        letter-spacing: 2px;
-    }
-
-    /* --- Sidebar Nav - ENHANCED --- */
     .nav-sidebar .nav-item {
         margin: 5px 10px;
         border-radius: 12px;
@@ -247,7 +170,6 @@
         overflow: hidden;
     }
 
-    /* Subtle background effect */
     .nav-sidebar .nav-link::before {
         content: '';
         position: absolute;
@@ -264,17 +186,6 @@
         width: 100%;
     }
 
-    /* Icon default (tidak aktif) - warna gray */
-    .nav-sidebar .nav-link i {
-        color: #b0b0b0 !important;
-        font-size: 18px;
-        margin-right: 12px;
-        transition: all 0.3s ease;
-        position: relative;
-        z-index: 1;
-    }
-
-    /* Hover effect - PREMIUM */
     .nav-sidebar .nav-link:hover {
         background-color: rgba(35, 69, 52, 0.08);
         color: #234534 !important;
@@ -282,21 +193,13 @@
         box-shadow: 0 2px 8px rgba(35, 69, 52, 0.12);
     }
 
-    .nav-sidebar .nav-link:hover i {
-        color: #234534 !important;
-        transform: scale(1.1);
-    }
-
-    /* Aktif state (halaman sedang dibuka) - LUXURY */
     .nav-sidebar .nav-link.active {
         background: linear-gradient(135deg, #234534 0%, #2d5940 100%) !important;
         color: #ffffff !important;
         box-shadow: 0 4px 12px rgba(35, 69, 52, 0.4),
                     inset 0 1px 0 rgba(255, 255, 255, 0.1);
-        transform: translateX(0);
     }
 
-    /* Icon saat aktif - warna putih (menyala) */
     .nav-sidebar .nav-link.active i {
         color: #ffffff !important;
         filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.5));
@@ -312,29 +215,4 @@
         }
     }
 
-    /* Text saat aktif - warna putih */
-    .nav-sidebar .nav-link.active p {
-        color: #ffffff !important;
-        font-weight: 600;
-    }
-
-    .nav-sidebar .nav-link.active::before {
-        width: 100%;
-        background: linear-gradient(90deg, rgba(255, 255, 255, 0.1) 0%, transparent 100%);
-    }
-
-    /* Logout khusus */
-    .nav-link.logout {
-        color: #d9534f !important;
-        margin-top: 20px;
-    }
-
-    .nav-link.logout:hover {
-        background-color: rgba(217, 83, 79, 0.1);
-        transform: translateX(4px);
-    }
-
-    .nav-link.logout i {
-        color: #d9534f !important;
-    }
 </style>

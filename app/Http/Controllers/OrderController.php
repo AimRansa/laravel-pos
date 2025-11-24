@@ -9,14 +9,30 @@ class OrderController extends Controller
 {
     public function index(Request $request)
     {
-        $search = $request->get('search');
+        $query = Order::query();
 
-        $orders = Order::when($search, function($query, $search) {
-                return $query->where('idtransaksi', 'like', "%{$search}%");
-            })
-            ->orderBy('idtransaksi', 'asc')
-            ->paginate(10);
+        // Filter berdasarkan tanggal transaksi
+        if ($request->filled('tanggal')) {
+            $query->whereDate('tanggal_transaksi', $request->tanggal);
+        }
+
+        // Search ID transaksi
+        if ($request->filled('search')) {
+            $query->where('idtransaksi', 'LIKE', "%{$request->search}%");
+        }
+
+        // Ambil SEMUA transaksi tanpa pagination
+        $orders = $query->orderBy('tanggal_transaksi', 'DESC')->get();
 
         return view('orders.index', compact('orders'));
+    }
+
+    public function show($id)
+    {
+        $order = Order::with('details.menu')
+            ->where('idtransaksi', $id)
+            ->firstOrFail();
+
+        return view('orders.show', compact('order'));
     }
 }

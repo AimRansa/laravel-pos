@@ -9,23 +9,17 @@ class Setting extends Model
 {
     use HasFactory;
 
-    // Hubungkan ke tabel laporan
-    protected $table = 'laporan';
+    protected $table = 'laporan';          // ✔ tabel yang benar
 
-    // Primary key
-    protected $primaryKey = 'id';
+    protected $primaryKey = 'id_laporan';  // ✔ primary key yang benar
 
-    // Jika ID tidak auto increment, bisa diatur manual
-    public $incrementing = true;
+    public $incrementing = true;           // ✔ auto increment (boleh true)
 
-    // Kalau tidak pakai timestamps (created_at, updated_at), ubah ke false
-    public $timestamps = true;
+    public $timestamps = false;            // ✔ tabel laporan tidak punya timestamp
 
-    // Kolom yang bisa diisi
     protected $fillable = [
-        'id_laporan',
-        'jumlah_transaksi',
         'tanggal_laporan',
+        'jumlah_transaksi',
         'total_stok',
     ];
 }

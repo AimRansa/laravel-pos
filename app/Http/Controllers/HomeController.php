@@ -28,7 +28,7 @@ class HomeController extends Controller
         $today = Carbon::now()->format('Y-m-d');
         $income_today = Order::where('tanggal_transaksi', $today)->sum('total_harga');
 
-        // 4. LOW STOCK PRODUCTS (stok < 50)
+        // 4. LOW STOCK PRODUCTS
         $low_stock_products = Product::where('jumlah_stok', '<', 50)
             ->orderBy('jumlah_stok', 'asc')
             ->limit(10)
@@ -36,45 +36,43 @@ class HomeController extends Controller
 
         // 5. HOT PRODUCTS (6 bulan terakhir)
         $six_months_ago = Carbon::now()->subMonths(6)->format('Y-m-d');
-        
+
         $hot_products = DetailPesanan::select(
                 'detail_pesanan.id_menu',
                 'cart.nama_menu',
                 DB::raw('SUM(detail_pesanan.quantity) as total_terjual'),
                 DB::raw('SUM(detail_pesanan.subtotal) as total_pendapatan'),
-                'cart.harga',
-                'cart.takaran'
+                'cart.harga'
             )
             ->join('orders', 'detail_pesanan.idtransaksi', '=', 'orders.idtransaksi')
             ->join('cart', 'detail_pesanan.id_menu', '=', 'cart.id_menu')
             ->where('orders.tanggal_transaksi', '>=', $six_months_ago)
-            ->groupBy('detail_pesanan.id_menu', 'cart.nama_menu', 'cart.harga', 'cart.takaran')
+            ->groupBy('detail_pesanan.id_menu', 'cart.nama_menu', 'cart.harga')
             ->orderBy('total_terjual', 'desc')
             ->limit(5)
             ->get();
 
-        // 6. BEST SELLING PRODUCTS (year)
+        // 6. BEST SELLING PRODUCTS (YEAR)
         $current_year = Carbon::now()->year;
-        
+
         $best_selling_products = DetailPesanan::select(
                 'detail_pesanan.id_menu',
                 'cart.nama_menu',
                 DB::raw('SUM(detail_pesanan.quantity) as total_terjual'),
                 DB::raw('SUM(detail_pesanan.subtotal) as total_pendapatan'),
-                'cart.harga',
-                'cart.takaran'
+                'cart.harga'
             )
             ->join('orders', 'detail_pesanan.idtransaksi', '=', 'orders.idtransaksi')
             ->join('cart', 'detail_pesanan.id_menu', '=', 'cart.id_menu')
             ->whereYear('orders.tanggal_transaksi', $current_year)
-            ->groupBy('detail_pesanan.id_menu', 'cart.nama_menu', 'cart.harga', 'cart.takaran')
+            ->groupBy('detail_pesanan.id_menu', 'cart.nama_menu', 'cart.harga')
             ->orderBy('total_terjual', 'desc')
             ->limit(5)
             ->get();
 
         // 7. CURRENT MONTH BEST SELLING
         $current_month = Carbon::now()->format('Y-m');
-        
+
         $current_month_products = DetailPesanan::select(
                 'detail_pesanan.id_menu',
                 'cart.nama_menu',
@@ -83,7 +81,7 @@ class HomeController extends Controller
             )
             ->join('orders', 'detail_pesanan.idtransaksi', '=', 'orders.idtransaksi')
             ->join('cart', 'detail_pesanan.id_menu', '=', 'cart.id_menu')
-            ->where('orders.tanggal_transaksi', 'like', $current_month . '%')
+            ->where('orders.tanggal_transaksi', 'like', $current_month.'%')
             ->groupBy('detail_pesanan.id_menu', 'cart.nama_menu')
             ->orderBy('total_terjual', 'desc')
             ->limit(5)

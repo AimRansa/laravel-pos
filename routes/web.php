@@ -21,34 +21,95 @@ Auth::routes();
 
 Route::prefix('admin')->middleware(['auth', 'locale'])->group(function () {
 
+    // ===============================
+    // DASHBOARD
+    // ===============================
     Route::get('/', [HomeController::class, 'index'])->name('home');
-    Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
-    Route::post('/settings', [SettingController::class, 'store'])->name('settings.store');
 
-    // Resource utama
-    Route::resource('products', ProductController::class);
-    Route::resource('customers', CustomerController::class);
-    Route::resource('orders', OrderController::class);
-    Route::resource('suppliers', SupplierController::class);
-    Route::resource('cart', CartController::class);
 
-    // Laporan
-    Route::get('/laporan', [SettingController::class, 'index'])->name('laporan.index');
-
-    // CSV Import
+    // ===============================
+    // IMPORT CSV
+    // ===============================
     Route::get('/upload-csv', [CsvController::class, 'showForm'])->name('csv.upload.form');
     Route::post('/upload-csv', [CsvController::class, 'upload'])->name('csv.upload.process');
 
-    // Tambahan Cart
+
+    // ===============================
+    // RESOURCE MASTER DATA
+    // ===============================
+    Route::resource('products', ProductController::class);
+    Route::resource('customers', CustomerController::class);
+    Route::resource('suppliers', SupplierController::class);
+    Route::resource('cart', CartController::class);
+
+    // ORDER (TRANSAKSI)
+    Route::resource('orders', OrderController::class); 
+    // index   → /admin/orders
+    // show    → /admin/orders/{id}
+
+
+    // ===============================
+    // CART LOGIC
+    // ===============================
     Route::post('/cart/change-qty', [CartController::class, 'changeQty'])->name('cart.changeQty');
     Route::delete('/cart/delete', [CartController::class, 'delete'])->name('cart.delete');
     Route::delete('/cart/empty', [CartController::class, 'empty'])->name('cart.empty');
 
-    // Pembelian
+
+    // ===============================
+    // PURCHASE
+    // ===============================
     Route::get('/purchase', [PurchaseController::class, 'index'])->name('purchase.cart.index');
     Route::post('/orders/partial-payment', [OrderController::class, 'partialPayment'])->name('orders.partial-payment');
 
-    // Bahasa
+
+    // ===============================
+    // LAPORAN PAGE (LIST)
+    // ===============================
+    Route::get('/laporan', [SettingController::class, 'index'])->name('laporan.index');
+
+    // DETAIL LAPORAN
+    Route::get('/laporan/{id}', [SettingController::class, 'show'])->name('laporan.show');
+
+    // CETAK LAPORAN
+    Route::get('/laporan/{id}/print', [SettingController::class, 'print'])->name('laporan.print');
+
+
+    // ===============================
+    // API DATA FOR CHARTS (TOP MENU, TOP STOK)
+    // ===============================
+    Route::get('/laporan/chart-data', function () {
+
+        $topMenus = \DB::table('laporan_detail')
+            ->select('nama_menu', \DB::raw('SUM(quantity) as total_qty'))
+            ->groupBy('nama_menu')
+            ->orderByDesc('total_qty')
+            ->limit(10)
+            ->get();
+
+        $topStoks = \DB::table('laporan_stok')
+            ->select('nama_produk', \DB::raw('SUM(jumlah_berkurang) as total_keluar'))
+            ->groupBy('nama_produk')
+            ->orderByDesc('total_keluar')
+            ->limit(10)
+            ->get();
+
+        return response()->json([
+            'top_menus' => [
+                'labels' => $topMenus->pluck('nama_menu'),
+                'data'   => $topMenus->pluck('total_qty'),
+            ],
+            'top_stoks' => [
+                'labels' => $topStoks->pluck('nama_produk'),
+                'data'   => $topStoks->pluck('total_keluar'),
+            ],
+        ]);
+    })->name('laporan.chart.data');
+
+
+    // ===============================
+    // MULTI LANGUAGE
+    // ===============================
     Route::get('lang/{lang}', function ($lang) {
         if (in_array($lang, ['en', 'id'])) {
             session(['locale' => $lang]);
@@ -57,20 +118,14 @@ Route::prefix('admin')->middleware(['auth', 'locale'])->group(function () {
         return redirect()->back();
     })->name('lang.switch');
 
-    // ==========================
-    //     RESEP ROUTES
-    // ==========================
+
+    // ===============================
+    // RESEP MENU LOGIC
+    // ===============================
     Route::prefix('resep')->group(function () {
-
-        Route::get('/{id_menu}', [ResepMenuController::class, 'index'])
-            ->name('resep.index');
-
-        Route::post('/{id_menu}', [ResepMenuController::class, 'store'])
-            ->name('resep.store');
-
-        Route::delete('/hapus/{id}', [ResepMenuController::class, 'destroy'])
-            ->name('resep.destroy');
-
+        Route::get('/{id_menu}', [ResepMenuController::class, 'index'])->name('resep.index');
+        Route::post('/{id_menu}', [ResepMenuController::class, 'store'])->name('resep.store');
+        Route::delete('/hapus/{id}', [ResepMenuController::class, 'destroy'])->name('resep.destroy');
     });
 
 });

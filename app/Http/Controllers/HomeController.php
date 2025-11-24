@@ -18,23 +18,27 @@ class HomeController extends Controller
 
     public function index()
     {
-        // 1. ORDERS COUNT
+        // TOTAL ORDERS
         $orders_count = Order::count();
 
-        // 2. TOTAL INCOME
+        // TOTAL INCOME
         $total_income = Order::sum('total_harga');
 
-        // 3. INCOME TODAY
+        // TODAY INCOME
         $today = Carbon::now()->format('Y-m-d');
         $income_today = Order::where('tanggal_transaksi', $today)->sum('total_harga');
 
-        // 4. LOW STOCK PRODUCTS
+        // LOW STOCK collection (untuk bagian atas dan near empty)
         $low_stock_products = Product::where('jumlah_stok', '<', 50)
             ->orderBy('jumlah_stok', 'asc')
-            ->limit(10)
             ->get();
 
-        // 5. HOT PRODUCTS (6 bulan terakhir)
+        // LOW STOCK PAGINATION (untuk bagian bawah)
+        $low_stock_paginate = Product::where('jumlah_stok', '<', 50)
+            ->orderBy('jumlah_stok', 'asc')
+            ->paginate(5);
+
+        // HOT PRODUCTS 6 BULAN
         $six_months_ago = Carbon::now()->subMonths(6)->format('Y-m-d');
 
         $hot_products = DetailPesanan::select(
@@ -52,7 +56,7 @@ class HomeController extends Controller
             ->limit(5)
             ->get();
 
-        // 6. BEST SELLING PRODUCTS (YEAR)
+        // BEST SELLING YEAR
         $current_year = Carbon::now()->year;
 
         $best_selling_products = DetailPesanan::select(
@@ -70,7 +74,7 @@ class HomeController extends Controller
             ->limit(5)
             ->get();
 
-        // 7. CURRENT MONTH BEST SELLING
+        // CURRENT MONTH
         $current_month = Carbon::now()->format('Y-m');
 
         $current_month_products = DetailPesanan::select(
@@ -92,6 +96,7 @@ class HomeController extends Controller
             'income' => $total_income,
             'income_today' => $income_today,
             'low_stock_products' => $low_stock_products,
+            'low_stock_paginate' => $low_stock_paginate,
             'hot_products' => $hot_products,
             'best_selling_products' => $best_selling_products,
             'current_month_products' => $current_month_products,

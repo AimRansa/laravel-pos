@@ -3,6 +3,21 @@
 @section('content')
 <div class="container mt-4">
 
+    <!-- TOMBOL DOWNLOAD -->
+    <div class="d-flex justify-content-end mb-4">
+
+        <a href="{{ route('laporan.export.pdf', $laporan->id_laporan) }}" 
+           class="btn btn-danger btn-sm me-2" target="_blank">
+            <i class="fa fa-file-pdf"></i> Download PDF
+        </a>
+
+        <a href="{{ route('laporan.export.excel', $laporan->id_laporan) }}" 
+           class="btn btn-success btn-sm" target="_blank">
+            <i class="fa fa-file-excel"></i> Download Excel
+        </a>
+
+    </div>
+
     <h3>Laporan Cetak #{{ $laporan->id_laporan }}</h3>
 
     <p><strong>Tanggal:</strong> 
@@ -31,12 +46,6 @@
                 <td>Rp {{ number_format($d->subtotal, 0, ',', '.') }}</td>
             </tr>
             @endforeach
-
-            @if($detail->isEmpty())
-            <tr>
-                <td colspan="3" class="text-center text-muted">Tidak ada detail transaksi.</td>
-            </tr>
-            @endif
         </tbody>
     </table>
 
@@ -52,15 +61,9 @@
             @foreach($stok as $s)
             <tr>
                 <td>{{ $s->nama_produk }}</td>
-                <td>{{ $s->jumlah_berkurang }}</td>
+                <td>{{ $s->jumlah_berkurang }} {{ $s->satuan ?? '' }}</td>
             </tr>
             @endforeach
-
-            @if($stok->isEmpty())
-            <tr>
-                <td colspan="2" class="text-center text-muted">Tidak ada data stok keluar.</td>
-            </tr>
-            @endif
         </tbody>
     </table>
 

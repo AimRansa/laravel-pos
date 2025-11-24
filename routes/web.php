@@ -13,6 +13,7 @@ use App\Http\Controllers\ResepMenuController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 
+
 Route::get('/', function () {
     return redirect('/admin');
 });
@@ -73,6 +74,13 @@ Route::prefix('admin')->middleware(['auth', 'locale'])->group(function () {
 
     // CETAK LAPORAN
     Route::get('/laporan/{id}/print', [SettingController::class, 'print'])->name('laporan.print');
+    Route::get('/admin/laporan/{id}/pdf', [SettingController::class, 'exportPDF'])->name('laporan.pdf');
+    Route::get('/admin/laporan/{id}/excel', [SettingController::class, 'exportExcel'])->name('laporan.excel');
+Route::get('/admin/laporan/{id}/export-pdf', [SettingController::class, 'exportPdf'])
+    ->name('laporan.export.pdf');
+
+Route::get('/admin/laporan/{id}/export-excel', [SettingController::class, 'exportExcel'])
+    ->name('laporan.export.excel');
 
 
     // ===============================

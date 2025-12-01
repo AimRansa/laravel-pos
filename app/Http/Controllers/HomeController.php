@@ -28,17 +28,66 @@ class HomeController extends Controller
         $today = Carbon::now()->format('Y-m-d');
         $income_today = Order::where('tanggal_transaksi', $today)->sum('total_harga');
 
-        // LOW STOCK collection (untuk bagian atas dan near empty)
-        $low_stock_products = Product::where('jumlah_stok', '<', 50)
-            ->orderBy('jumlah_stok', 'asc')
-            ->get();
+        // AMBIL SEMUA PRODUK
+        $products = Product::all();
 
-        // LOW STOCK PAGINATION (untuk bagian bawah)
-        $low_stock_paginate = Product::where('jumlah_stok', '<', 50)
-            ->orderBy('jumlah_stok', 'asc')
-            ->paginate(5);
 
-        // HOT PRODUCTS 6 BULAN
+        /* ==========================
+           LOW STOCK (THRESHOLD PER SATUAN)
+        ========================== */
+
+        $low_stock_products = $products->filter(function ($p) {
+
+            $threshold = match ($p->satuan) {
+                'pcs' => 300,
+                'kg' => 20,
+                'liter' => 30,
+                'pack' => 50,
+                'dus' => 10,
+                'ml' => 500,
+                'gr' => 1000,
+                'slice' => 100,
+                default => 100,
+            };
+
+            return $p->jumlah_stok < $threshold;
+        });
+
+
+        // PAGINATION LOW STOCK (TABEL BAWAH)
+        $low_stock_paginate = $products->filter(function ($p) {
+
+            $threshold = match ($p->satuan) {
+                'pcs' => 300,
+                'kg' => 20,
+                'liter' => 30,
+                'pack' => 50,
+                'dus' => 10,
+                'ml' => 500,
+                'gr' => 1000,
+                'slice' => 100,
+                default => 100,
+            };
+
+            return $p->jumlah_stok < $threshold && $p->jumlah_stok >= 0;
+        });
+
+        // UBAH COLLECTION KE PAGINATION
+        $perPage = 5;
+        $page = request()->get('page', 1);
+        $low_stock_paginate = new \Illuminate\Pagination\LengthAwarePaginator(
+            $low_stock_paginate->forPage($page, $perPage),
+            $low_stock_paginate->count(),
+            $perPage,
+            $page,
+            ['path' => url()->current()]
+        );
+
+
+        /* ==========================
+           HOT PRODUCTS 6 BULAN
+        ========================== */
+
         $six_months_ago = Carbon::now()->subMonths(6)->format('Y-m-d');
 
         $hot_products = DetailPesanan::select(
@@ -56,7 +105,11 @@ class HomeController extends Controller
             ->limit(5)
             ->get();
 
-        // BEST SELLING YEAR
+
+        /* ==========================
+           BEST SELLING TAHUN INI
+        ========================== */
+
         $current_year = Carbon::now()->year;
 
         $best_selling_products = DetailPesanan::select(
@@ -74,7 +127,11 @@ class HomeController extends Controller
             ->limit(5)
             ->get();
 
-        // CURRENT MONTH
+
+        /* ==========================
+           PRODUK BULAN INI
+        ========================== */
+
         $current_month = Carbon::now()->format('Y-m');
 
         $current_month_products = DetailPesanan::select(
@@ -91,6 +148,7 @@ class HomeController extends Controller
             ->limit(5)
             ->get();
 
+
         return view('home', [
             'orders_count' => $orders_count,
             'income' => $total_income,
@@ -103,3 +161,4 @@ class HomeController extends Controller
         ]);
     }
 }
+

@@ -12,22 +12,98 @@
     @yield('css')
 
     <!-- Custom Background -->
-    <style>
-        body {
-            background-color: #E5E5E5 !important;
-        }
-        .content-wrapper {
-            background-color: #E5E5E5 !important;
-        }
-        .card, .table {
-            background-color: #ffffff;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        }
-        .alert {
-            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-        }
-    </style>
+  <style>
+    /* GLOBAL LOADING OVERLAY */
+    #global-loader {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.78);
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        z-index: 999999;
+    }
+
+    .loader-spinner {
+        width: 65px;
+        height: 65px;
+        border: 8px solid #ddd;
+        border-top-color: #3498db;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-bottom: 15px;
+    }
+
+    @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    #global-loader p {
+        font-size: 18px;
+        font-weight: 600;
+        color: #333;
+    }
+</style>
+
+
 </head>
+<!-- GLOBAL LOADING OVERLAY -->
+<div id="global-loader">
+    <div class="loader-spinner"></div>
+    <p>Mohon tunggu... sedang diproses</p>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+
+    const globalLoader = document.getElementById("global-loader");
+
+    // TAMPILKAN LOADING SAAT SUBMIT SEMUA FORM
+    document.querySelectorAll("form").forEach(form => {
+        form.addEventListener("submit", function () {
+            globalLoader.style.display = "flex";
+        });
+    });
+
+    // TAMPILKAN LOADING SAAT KLIK TOMBOL YG REDIRECT
+    const loadingButtons = document.querySelectorAll(
+        "button[type=submit], a.btn, .btn"
+    );
+
+    loadingButtons.forEach(btn => {
+        btn.addEventListener("click", function(e) {
+
+            // Abaikan tombol swal, toggle, sidebar, dll
+            if (
+                btn.classList.contains("swal2-confirm") ||
+                btn.classList.contains("swal2-cancel") ||
+                btn.closest(".sidebar") ||
+                btn.closest(".navbar")
+            ) return;
+
+            // Abaikan tombol detail yang pakai target blank
+            if (btn.getAttribute("target") === "_blank") return;
+
+            // Tampilkan loader
+            globalLoader.style.display = "flex";
+        });
+    });
+
+    // Loader otomatis hilang setelah halaman selesai load
+    window.addEventListener("load", function () {
+        globalLoader.style.display = "none";
+    });
+
+});
+</script>
+
 
 <body class="hold-transition sidebar-mini">
 

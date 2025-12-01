@@ -54,6 +54,9 @@
                 <option value="liter" {{ $product->satuan == 'liter' ? 'selected' : '' }}>liter</option>
                 <option value="pack"  {{ $product->satuan == 'pack' ? 'selected' : '' }}>pack</option>
                 <option value="dus"   {{ $product->satuan == 'dus' ? 'selected' : '' }}>dus</option>
+                <option value="ml"   {{ $product->satuan == 'ml' ? 'selected' : '' }}>ml</option>
+                <option value="gr"   {{ $product->satuan == 'gr' ? 'selected' : '' }}>gr</option>
+                <option value="slice"   {{ $product->satuan == 'slice' ? 'selected' : '' }}>slice</option>
             </select>
         </div>
 

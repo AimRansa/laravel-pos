@@ -10,7 +10,7 @@ use App\Models\DetailPesanan;
 use App\Models\ResepMenu;
 use App\Models\Product;
 use App\Models\Cart;
-use App\Models\Setting;           // tabel laporan
+use App\Models\Setting;
 use App\Models\LaporanDetail;
 use App\Models\LaporanStok;
 use Carbon\Carbon;
@@ -24,43 +24,41 @@ class CsvController extends Controller
 
     public function upload(Request $request)
     {
-        // Validasi CSV
+        // VALIDASI FILE
         $validator = Validator::make($request->all(), [
             'csv_file' => 'required|mimes:csv,txt|max:40960',
         ]);
 
         if ($validator->fails()) {
-            return back()->withErrors($validator);
+            return back()->withErrors("❌ File CSV wajib format .csv dan maksimal 40MB.");
         }
 
         $file = $request->file('csv_file');
         $handle = fopen($file->getRealPath(), 'r');
 
-        // Baca header
-        $headerLine = fgets($handle);
-        $header = str_getcsv($headerLine, ';');
+        // BACA HEADER CSV
+        $firstLine = fgets($handle);
+        $header = str_getcsv($firstLine, ';');
 
-        // Daftar kolom WAJIB
-        if (
-            !in_array('idtransaksi', $header) ||
-            !in_array('id_menu', $header) ||
-            !in_array('total_pesanan', $header) ||
-            !in_array('tanggal_transaksi', $header)
-        ) {
-            fclose($handle);
-            return back()->withErrors("❌ Header CSV wajib: idtransaksi; id_menu; tanggal_transaksi; total_pesanan");
+        // KOLOM WAJIB
+        $required = ['idtransaksi', 'id_menu', 'tanggal_transaksi', 'total_pesanan'];
+
+        foreach ($required as $col) {
+            if (!in_array($col, $header)) {
+                return back()->withErrors("❌ Kolom '$col' tidak ditemukan dalam CSV.");
+            }
         }
 
-        // Ambil index
-        $idx_trans  = array_search('idtransaksi', $header);
-        $idx_menu   = array_search('id_menu', $header);
-        $idx_tanggal = array_search('tanggal_transaksi', $header);
-        $idx_qty    = array_search('total_pesanan', $header);
+        // INDEX KOLOM
+        $idx_trans    = array_search('idtransaksi', $header);
+        $idx_menu     = array_search('id_menu', $header);
+        $idx_tanggal  = array_search('tanggal_transaksi', $header);
+        $idx_qty      = array_search('total_pesanan', $header);
 
-        // Penampung
-        $lapDetail = [];
+        // VARIABEL PENAMPUNG
         $stokPerProduk = [];
-        $uniqueTrans = [];
+        $transactions = [];
+        $lineNumber = 1;
 
         DB::beginTransaction();
 
@@ -68,37 +66,59 @@ class CsvController extends Controller
 
             while (($line = fgets($handle)) !== false) {
 
+                $lineNumber++;
                 $row = str_getcsv($line, ';');
 
-                if (!isset($row[$idx_trans]) || !isset($row[$idx_menu])) continue;
+                // VALIDASI ID TRANSAKSI
+                if (!isset($row[$idx_trans]) || trim($row[$idx_trans]) == '') {
+                    throw new \Exception("❌ Baris $lineNumber: 'idtransaksi' kosong.");
+                }
+                $idtrans = trim($row[$idx_trans]);
 
-                $idtrans  = trim($row[$idx_trans]);
-                $id_menu  = trim($row[$idx_menu]);
-                $qty      = (int) trim($row[$idx_qty]);
-                $tglCsv   = trim($row[$idx_tanggal]);
-
-                if ($idtrans === '' || $id_menu === '') continue;
-
-                // Format tanggal CSV dd/mm/YYYY → YYYY-mm-dd
-                $tanggalFix = Carbon::createFromFormat('d/m/Y', $tglCsv)->format('Y-m-d');
-
-                // Ambil menu dr tabel cart
-                $menu = Cart::where('id_menu', $id_menu)->first();
-                if (!$menu) {
-                    throw new \Exception("❌ ID Menu '$id_menu' tidak ditemukan di tabel cart!");
+                // VALIDASI ID MENU
+                if (!isset($row[$idx_menu]) || trim($row[$idx_menu]) == '') {
+                    throw new \Exception("❌ Baris $lineNumber: 'id_menu' kosong.");
                 }
 
-                // Buat order jika belum ada
-                $order = Order::firstOrCreate(
+                $id_menu = trim($row[$idx_menu]);
+                $menu = Cart::where('id_menu', $id_menu)->first();
+
+                if (!$menu) {
+                    throw new \Exception("❌ Baris $lineNumber: ID Menu '$id_menu' tidak ditemukan.");
+                }
+
+                // VALIDASI QTY
+                if (!is_numeric($row[$idx_qty])) {
+                    throw new \Exception("❌ Baris $lineNumber: total_pesanan harus angka.");
+                }
+
+                $qty = (int)$row[$idx_qty];
+                if ($qty <= 0) {
+                    throw new \Exception("❌ Baris $lineNumber: total_pesanan harus lebih dari 0.");
+                }
+
+                // VALIDASI TANGGAL (dd/mm/YYYY)
+                $tglCsv = trim($row[$idx_tanggal]);
+                try {
+                    $tanggalFix = Carbon::createFromFormat('d/m/Y', $tglCsv)->format('Y-m-d');
+                } catch (\Exception $err) {
+                    throw new \Exception("❌ Baris $lineNumber: Format tanggal '$tglCsv' salah (gunakan dd/mm/YYYY).");
+                }
+
+                // ===============================================================
+                //  UPDATE / INSERT ORDER + CATAT upload_at SETIAP IMPORT
+                // ===============================================================
+                $order = Order::updateOrCreate(
                     ['idtransaksi' => $idtrans],
                     [
                         'tanggal_transaksi' => $tanggalFix,
                         'total_pesanan'     => 0,
-                        'total_harga'       => 0
+                        'total_harga'       => 0,
+                        'upload_at'         => now(), // <── INI PENCATATAN UPLOAD YG KAMU MAU
                     ]
                 );
 
-                // Insert detail pesanan
+                // SIMPAN DETAIL PESANAN
                 DetailPesanan::create([
                     'idtransaksi' => $idtrans,
                     'id_menu'     => $id_menu,
@@ -107,74 +127,60 @@ class CsvController extends Controller
                     'subtotal'    => $menu->harga * $qty,
                 ]);
 
-                // Hitung stok berdasarkan resep
+                // RESEP & PENGURANGAN STOK
                 $resepList = ResepMenu::where('id_menu', $id_menu)->get();
 
-                foreach ($resepList as $r) {
-                    $pakai = $r->takaran * $qty;
-                    Product::where('id', $r->id_produk)->decrement('jumlah_stok', $pakai);
+                if ($resepList->isEmpty()) {
+                    throw new \Exception("❌ Menu '$id_menu' tidak memiliki resep.");
+                }
 
+                foreach ($resepList as $r) {
+
+                    $pakai = $r->takaran * $qty;
                     $produk = Product::find($r->id_produk);
+
+                    if (!$produk) {
+                        throw new \Exception("❌ Produk ID '{$r->id_produk}' tidak ditemukan.");
+                    }
+
+                    if ($produk->jumlah_stok < $pakai) {
+                        throw new \Exception("❌ Stok '{$produk->nama_stok}' tidak cukup. Dibutuhkan $pakai {$produk->satuan}.");
+                    }
+
+                    Product::where('id', $r->id_produk)->decrement('jumlah_stok', $pakai);
 
                     if (!isset($stokPerProduk[$r->id_produk])) {
                         $stokPerProduk[$r->id_produk] = [
                             'nama'   => $produk->nama_stok,
-                            'jumlah' => 0,
-                            'satuan' => $produk->satuan
+                            'satuan' => $produk->satuan,
+                            'jumlah' => 0
                         ];
                     }
 
                     $stokPerProduk[$r->id_produk]['jumlah'] += $pakai;
                 }
 
-                // Simpan laporan detail grouped by transaksi
-                $lapDetail[$idtrans][] = [
-                    'id_menu'   => $id_menu,
-                    'nama_menu' => $menu->nama_menu,
-                    'quantity'  => $qty,
-                    'subtotal'  => $menu->harga * $qty,
-                ];
-
-                $uniqueTrans[$idtrans] = true;
+                $transactions[$idtrans] = true;
             }
 
-            // Update total order
-            foreach (array_keys($uniqueTrans) as $trx) {
-
+            // UPDATE TOTAL ORDER
+            foreach (array_keys($transactions) as $trx) {
                 $details = DetailPesanan::where('idtransaksi', $trx)->get();
 
-                $totalQty   = $details->sum('quantity');
-                $totalHarga = $details->sum('subtotal');
-
                 Order::where('idtransaksi', $trx)->update([
-                    'total_pesanan' => $totalQty,
-                    'total_harga'   => $totalHarga,
+                    'total_pesanan' => $details->sum('quantity'),
+                    'total_harga'   => $details->sum('subtotal'),
                 ]);
             }
 
-            // Buat laporan harian
+            // LAPORAN HARIAN
             $laporan = Setting::firstOrCreate(
                 ['tanggal_laporan' => Carbon::today()->toDateString()],
                 ['jumlah_transaksi' => 0, 'total_stok' => 0]
             );
 
-            $laporan->increment('jumlah_transaksi', count($uniqueTrans));
+            $laporan->increment('jumlah_transaksi', count($transactions));
 
-            // Insert laporan_detail
-            foreach ($lapDetail as $trx => $rows) {
-                foreach ($rows as $d) {
-                    LaporanDetail::create([
-                        'laporan_id' => $laporan->id_laporan,
-                        'id_menu'    => $d['id_menu'],
-                        'nama_menu'  => $d['nama_menu'],
-                        'quantity'   => $d['quantity'],
-                        'subtotal'   => $d['subtotal'],
-                    ]);
-                }
-            }
-
-            // Insert laporan_stok
-            $totalStok = 0;
             foreach ($stokPerProduk as $s) {
                 LaporanStok::create([
                     'laporan_id'       => $laporan->id_laporan,
@@ -183,23 +189,21 @@ class CsvController extends Controller
                     'satuan'           => $s['satuan'],
                 ]);
 
-                $totalStok += $s['jumlah'];
+                $laporan->increment('total_stok', $s['jumlah']);
             }
-
-            $laporan->increment('total_stok', $totalStok);
 
             DB::commit();
             fclose($handle);
 
             return redirect()->route('orders.index')
-                ->with('success', "CSV berhasil diimport & laporan harian berhasil diperbarui.");
+                ->with('success', "CSV berhasil diimport!");
 
         } catch (\Throwable $e) {
 
             DB::rollBack();
             fclose($handle);
 
-            return back()->withErrors("❌ Error saat import CSV: " . $e->getMessage());
+            return back()->withErrors($e->getMessage());
         }
     }
 }

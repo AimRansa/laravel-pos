@@ -5,15 +5,18 @@
 
     <h3>🧾 Detail Transaksi #{{ $order->idtransaksi }}</h3>
 
-    <div class="card mb-4">
-        <div class="card-body">
+    <p><strong>Waktu Upload CSV:</strong>
+        {{ $order->upload_at ? \Carbon\Carbon::parse($order->upload_at)->format('d-m-Y H:i') : '-' }}
+    </p>
 
-            <p><strong>Tanggal:</strong> {{ $order->tanggal_transaksi->format('d-m-Y') }}</p>
-            <p><strong>Total Pesanan:</strong> {{ $order->total_pesanan }}</p>
-            <p><strong>Total Harga:</strong> Rp {{ number_format($order->total_harga, 0, ',', '.') }}</p>
+    <p><strong>Tanggal Transaksi (CSV):</strong>
+        {{ \Carbon\Carbon::parse($order->tanggal_transaksi)->format('d-m-Y') }}
+    </p>
 
-        </div>
-    </div>
+    <p><strong>Total Pesanan:</strong> {{ $order->total_pesanan }}</p>
+    <p><strong>Total Harga:</strong> Rp {{ number_format($order->total_harga, 0, ',', '.') }}</p>
+
+    <hr>
 
     <h5>📌 Daftar Menu</h5>
 
@@ -35,9 +38,7 @@
                     <td>{{ $d->menu->nama_menu ?? '-' }}</td>
                     <td>{{ $d->quantity }}</td>
                     <td>Rp {{ number_format($d->menu->harga ?? 0, 0, ',', '.') }}</td>
-                    <td>
-                        Rp {{ number_format(($d->menu->harga ?? 0) * $d->quantity, 0, ',', '.') }}
-                    </td>
+                    <td>Rp {{ number_format(($d->menu->harga ?? 0) * $d->quantity, 0, ',', '.') }}</td>
                 </tr>
             @endforeach
         </tbody>

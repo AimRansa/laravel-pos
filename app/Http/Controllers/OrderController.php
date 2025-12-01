@@ -9,20 +9,8 @@ class OrderController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Order::query();
-
-        // Filter berdasarkan tanggal transaksi
-        if ($request->filled('tanggal')) {
-            $query->whereDate('tanggal_transaksi', $request->tanggal);
-        }
-
-        // Search ID transaksi
-        if ($request->filled('search')) {
-            $query->where('idtransaksi', 'LIKE', "%{$request->search}%");
-        }
-
-        // Ambil SEMUA transaksi tanpa pagination
-        $orders = $query->orderBy('tanggal_transaksi', 'DESC')->get();
+        // Urutkan berdasarkan waktu upload CSV
+        $orders = Order::orderBy('upload_at', 'DESC')->get();
 
         return view('orders.index', compact('orders'));
     }

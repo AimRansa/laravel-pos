@@ -10,7 +10,7 @@
 .stat-card {
     border-radius: 16px;
     padding: 30px;
-    height: 180px; /* DIPERBESAR agar sama seperti kotak merah */
+    height: 180px;
     color: #fff;
     display: flex;
     flex-direction: column;
@@ -23,12 +23,10 @@
     box-shadow: 0 18px 40px rgba(0,0,0,0.18);
 }
 
-/* Scrollable restock list */
 .restock-box {
     max-height: 260px;
     overflow-y: auto;
 }
-
 .restock-box::-webkit-scrollbar {
     width: 6px;
 }
@@ -37,19 +35,61 @@
     border-radius: 10px;
 }
 
-/* Card global */
+/* Card */
 .card {
     border-radius: 16px;
     animation: fadeIn .6s ease;
 }
 
-/* Fade animation */
 @keyframes fadeIn {
     from {opacity: 0; transform: translateY(10px);}
     to {opacity: 1; transform: translateY(0);}
 }
 
+/* ========================= SLIDER CHART ========================= */
+.chart-slider {
+    position: relative;
+    overflow: hidden;
+}
+
+.chart-wrapper {
+    display: flex;
+    transition: transform .6s ease;
+}
+
+.chart-slide {
+    min-width: 100%;
+    padding: 10px;
+}
+
+/* FIX UKURAN CHART */
+.chart-slide canvas {
+    max-height: 270px !important;
+    height: 270px !important;
+}
+
+/* Tombol slider */
+.chart-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: #009c59;
+    color: white;
+    border: none;
+    padding: 10px 14px;
+    border-radius: 50%;
+    cursor: pointer;
+    z-index: 5;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+.chart-btn:hover {
+    background: #00b86a;
+}
+.chart-btn.prev { left: 10px; }
+.chart-btn.next { right: 10px; }
+
 </style>
+
 
 
 <div class="container-fluid">
@@ -57,29 +97,22 @@
     <!-- ======================= TOP STATS ======================= -->
     <div class="row">
 
-        <!-- TOTAL ORDERS -->
         <div class="col-lg-4 mb-3">
             <div class="stat-card" style="background: linear-gradient(135deg,#0062ff,#3c9dff);">
                 <h5>Total Orders</h5>
                 <h2 class="fw-bold">{{ $orders_count }}</h2>
-                <small>
-                    <a href="{{ route('orders.index') }}" class="text-white">More info →</a>
-                </small>
+                <small><a href="{{ route('orders.index') }}" class="text-white">More info →</a></small>
             </div>
         </div>
 
-        <!-- TOTAL INCOME -->
         <div class="col-lg-4 mb-3">
             <div class="stat-card" style="background: linear-gradient(135deg,#009c59,#36df8a);">
                 <h5>Total Income</h5>
                 <h2 class="fw-bold">Rp {{ number_format($income,0,',','.') }}</h2>
-                <small>
-                    <a href="{{ route('orders.index') }}" class="text-white">More info →</a>
-                </small>
+                <small><a href="{{ route('orders.index') }}" class="text-white">More info →</a></small>
             </div>
         </div>
 
-        <!-- NEED RESTOCK -->
         <div class="col-lg-4 mb-3">
             <div class="stat-card" style="background: linear-gradient(135deg,#c10000,#ff4141);">
 
@@ -88,7 +121,7 @@
                 <div class="restock-box mt-2">
 
                     @forelse ($low_stock_products as $item)
-                        @if ($item->jumlah_stok < 0)
+                        @if ($item->jumlah_stok < 5)
                             <div class="d-flex justify-content-between align-items-center mb-2 p-2 bg-white text-dark rounded">
                                 <div>
                                     <strong>{{ $item->nama_stok }}</strong><br>
@@ -111,13 +144,56 @@
 
 
 
-    <!-- ======================= CHART ======================= -->
+    <!-- ======================= NEW CHART SLIDER ======================= -->
+    <div class="row mt-3">
+        <div class="col-lg-12">
+
+            <div class="card shadow-sm p-3">
+                <h5 class="fw-bold">Analytics Dashboard</h5>
+
+                <div class="chart-slider mt-3">
+
+                    <button class="chart-btn prev" onclick="prevSlide()">‹</button>
+                    <button class="chart-btn next" onclick="nextSlide()">›</button>
+
+                    <div class="chart-wrapper" id="chartWrapper">
+
+                        <!-- Slide 1 -->
+                        <div class="chart-slide">
+                            <h6 class="text-center mb-2">Category Composition (Pie Chart)</h6>
+                            <canvas id="chart1"></canvas>
+                        </div>
+
+                        <!-- Slide 2 -->
+                        <div class="chart-slide">
+                            <h6 class="text-center mb-2">Stock Usage Overview</h6>
+                            <canvas id="chart2"></canvas>
+                        </div>
+
+                        <!-- Slide 3 -->
+                        <div class="chart-slide">
+                            <h6 class="text-center mb-2">Monthly Orders Bar Chart</h6>
+                            <canvas id="chart3"></canvas>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+
+
+
+    <!-- ======================= ORIGINAL SALES CHART ======================= -->
     <div class="row mt-3">
         <div class="col-lg-12">
             <div class="card shadow-sm">
                 <div class="card-body">
                     <h5 class="fw-bold">Sales Overview (6 Months)</h5>
-                    <canvas id="salesChart" height="90"></canvas> <!-- Grafik DIKECILKAN -->
+                    <canvas id="salesChart" height="90"></canvas>
                 </div>
             </div>
         </div>
@@ -166,7 +242,7 @@
                 <div class="card-body">
 
                     <h5 class="fw-bold">Low Stock</h5>
-                    <p class="text-muted" style="margin-top:-6px">Stok < 300 (belum minus)</p>
+                    <p class="text-muted" style="margin-top:-6px">Stok mendekati habis</p>
 
                     @php
                         $low_stock_paginate = \App\Models\Product::where('jumlah_stok','<',300)
@@ -216,8 +292,74 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
+/* ======================= SLIDER ======================= */
+let currentSlide = 0;
+const totalSlides = 3;
+const wrapper = document.getElementById("chartWrapper");
+
+function showSlide(i) {
+    currentSlide = (i + totalSlides) % totalSlides;
+    wrapper.style.transform = `translateX(-${currentSlide * 100}%)`;
+}
+
+function nextSlide() { showSlide(currentSlide + 1); }
+function prevSlide() { showSlide(currentSlide - 1); }
+
+setInterval(nextSlide, 5000);
+
+/* Swipe Support */
+let startX = 0;
+wrapper.addEventListener("touchstart", e => startX = e.touches[0].clientX);
+wrapper.addEventListener("touchend", e => {
+    const diff = e.changedTouches[0].clientX - startX;
+    if (diff > 50) prevSlide();
+    if (diff < -50) nextSlide();
+});
+
+
+
+/* ======================= CHARTS ======================= */
 document.addEventListener("DOMContentLoaded", () => {
 
+    // Chart 1 - PIE
+    new Chart(document.getElementById("chart1"), {
+        type: "pie",
+        data: {
+            labels: ["Kopi", "Minuman", "Snack", "Plastik", "Gas"],
+            datasets: [{
+                data: [40, 20, 15, 18, 7],
+                backgroundColor: ["#007bff", "#ffc107", "#ff6384", "#8e44ad", "#2ecc71"]
+            }]
+        }
+    });
+
+    // Chart 2 - DOUGHNUT
+    new Chart(document.getElementById("chart2"), {
+        type: "doughnut",
+        data: {
+            labels: ["Stock Dipakai", "Sisa Stok"],
+            datasets: [{
+                data: [65, 35],
+                backgroundColor: ["#36a2eb", "#cccccc"]
+            }]
+        }
+    });
+
+    // Chart 3 - BAR
+    new Chart(document.getElementById("chart3"), {
+        type: "bar",
+        data: {
+            labels: ["Jan", "Feb", "Mar", "Apr", "Mei"],
+            datasets: [{
+                label: "Order",
+                data: [25, 40, 32, 50, 45],
+                backgroundColor: "#009c59"
+            }]
+        }
+    });
+
+
+    // ORIGINAL SALES OVERVIEW CHART
     new Chart(document.getElementById("salesChart"), {
         type: "line",
         data: {
@@ -229,23 +371,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 backgroundColor: "rgba(0,123,255,0.25)",
                 tension: 0.35,
                 borderWidth: 3,
-                fill: true,
+                fill: true
             }]
-        },
-        options: {
-            animation: {
-                duration: 1600,
-                easing: "easeOutQuart"
-            },
-            scales: {
-                y: {
-                    beginAtZero: false,
-                    grid: { color: "#efefef" }
-                },
-                x: {
-                    grid: { display: false }
-                }
-            }
         }
     });
 

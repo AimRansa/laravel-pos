@@ -6,7 +6,7 @@
     <h3>🧾 Detail Transaksi #{{ $order->idtransaksi }}</h3>
 
     <p><strong>Waktu Upload CSV:</strong>
-        {{ $order->upload_at ? \Carbon\Carbon::parse($order->upload_at)->format('d-m-Y H:i') : '-' }}
+        {{ $order->upload_at ? $order->upload_at->timezone('Asia/Jakarta')->format('d-m-Y H:i') : '-' }}
     </p>
 
     <p><strong>Tanggal Transaksi (CSV):</strong>
@@ -14,7 +14,10 @@
     </p>
 
     <p><strong>Total Pesanan:</strong> {{ $order->total_pesanan }}</p>
-    <p><strong>Total Harga:</strong> Rp {{ number_format($order->total_harga, 0, ',', '.') }}</p>
+
+    <p><strong>Total Harga:</strong> 
+        Rp {{ number_format($order->total_harga, 0, ',', '.') }}
+    </p>
 
     <hr>
 

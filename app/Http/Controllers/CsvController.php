@@ -49,13 +49,13 @@ class CsvController extends Controller
             }
         }
 
-        // INDEX KOLOM
+        // INDEX KOLOM CSV
         $idx_trans    = array_search('idtransaksi', $header);
         $idx_menu     = array_search('id_menu', $header);
         $idx_tanggal  = array_search('tanggal_transaksi', $header);
         $idx_qty      = array_search('total_pesanan', $header);
 
-        // VARIABEL PENAMPUNG
+        // VARIABEL
         $stokPerProduk = [];
         $transactions = [];
         $lineNumber = 1;
@@ -69,35 +69,33 @@ class CsvController extends Controller
                 $lineNumber++;
                 $row = str_getcsv($line, ';');
 
-                // VALIDASI ID TRANSAKSI
+                // ID transaksi
                 if (!isset($row[$idx_trans]) || trim($row[$idx_trans]) == '') {
                     throw new \Exception("❌ Baris $lineNumber: 'idtransaksi' kosong.");
                 }
                 $idtrans = trim($row[$idx_trans]);
 
-                // VALIDASI ID MENU
+                // ID Menu
                 if (!isset($row[$idx_menu]) || trim($row[$idx_menu]) == '') {
                     throw new \Exception("❌ Baris $lineNumber: 'id_menu' kosong.");
                 }
-
                 $id_menu = trim($row[$idx_menu]);
-                $menu = Cart::where('id_menu', $id_menu)->first();
 
+                $menu = Cart::where('id_menu', $id_menu)->first();
                 if (!$menu) {
                     throw new \Exception("❌ Baris $lineNumber: ID Menu '$id_menu' tidak ditemukan.");
                 }
 
-                // VALIDASI QTY
+                // QTY
                 if (!is_numeric($row[$idx_qty])) {
                     throw new \Exception("❌ Baris $lineNumber: total_pesanan harus angka.");
                 }
-
                 $qty = (int)$row[$idx_qty];
                 if ($qty <= 0) {
                     throw new \Exception("❌ Baris $lineNumber: total_pesanan harus lebih dari 0.");
                 }
 
-                // VALIDASI TANGGAL (dd/mm/YYYY)
+                // TANGGAL CSV dd/mm/YYYY
                 $tglCsv = trim($row[$idx_tanggal]);
                 try {
                     $tanggalFix = Carbon::createFromFormat('d/m/Y', $tglCsv)->format('Y-m-d');
@@ -105,16 +103,16 @@ class CsvController extends Controller
                     throw new \Exception("❌ Baris $lineNumber: Format tanggal '$tglCsv' salah (gunakan dd/mm/YYYY).");
                 }
 
-                // ===============================================================
-                //  UPDATE / INSERT ORDER + CATAT upload_at SETIAP IMPORT
-                // ===============================================================
+                // ======================================
+                // INSERT / UPDATE ORDER + UPLOAD TIME
+                // ======================================
                 $order = Order::updateOrCreate(
                     ['idtransaksi' => $idtrans],
                     [
                         'tanggal_transaksi' => $tanggalFix,
                         'total_pesanan'     => 0,
                         'total_harga'       => 0,
-                        'upload_at'         => now(), // <── INI PENCATATAN UPLOAD YG KAMU MAU
+                        'upload_at'         => now()->timezone('Asia/Jakarta'), // FIX TIMEZONE
                     ]
                 );
 
@@ -127,15 +125,13 @@ class CsvController extends Controller
                     'subtotal'    => $menu->harga * $qty,
                 ]);
 
-                // RESEP & PENGURANGAN STOK
+                // CEK RESEP
                 $resepList = ResepMenu::where('id_menu', $id_menu)->get();
-
                 if ($resepList->isEmpty()) {
                     throw new \Exception("❌ Menu '$id_menu' tidak memiliki resep.");
                 }
 
                 foreach ($resepList as $r) {
-
                     $pakai = $r->takaran * $qty;
                     $produk = Product::find($r->id_produk);
 
@@ -147,6 +143,7 @@ class CsvController extends Controller
                         throw new \Exception("❌ Stok '{$produk->nama_stok}' tidak cukup. Dibutuhkan $pakai {$produk->satuan}.");
                     }
 
+                    // KURANGI STOK
                     Product::where('id', $r->id_produk)->decrement('jumlah_stok', $pakai);
 
                     if (!isset($stokPerProduk[$r->id_produk])) {
@@ -173,7 +170,7 @@ class CsvController extends Controller
                 ]);
             }
 
-            // LAPORAN HARIAN
+            // LAPORAN
             $laporan = Setting::firstOrCreate(
                 ['tanggal_laporan' => Carbon::today()->toDateString()],
                 ['jumlah_transaksi' => 0, 'total_stok' => 0]
@@ -199,10 +196,8 @@ class CsvController extends Controller
                 ->with('success', "CSV berhasil diimport!");
 
         } catch (\Throwable $e) {
-
             DB::rollBack();
             fclose($handle);
-
             return back()->withErrors($e->getMessage());
         }
     }

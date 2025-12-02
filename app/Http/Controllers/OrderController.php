@@ -7,10 +7,11 @@ use Illuminate\Http\Request;
 
 class OrderController extends Controller
 {
-    public function index(Request $request)
+    public function index()
     {
-        // Urutkan berdasarkan waktu upload CSV
-        $orders = Order::orderBy('upload_at', 'DESC')->get();
+        $orders = Order::orderBy('upload_at', 'DESC')
+            ->orderBy('idtransaksi', 'DESC')
+            ->get();
 
         return view('orders.index', compact('orders'));
     }

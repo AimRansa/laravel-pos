@@ -6,7 +6,6 @@
 <style>
 /* ========================= PREMIUM UI ========================= */
 
-/* Kartu statistik atas */
 .stat-card {
     border-radius: 16px;
     padding: 30px;
@@ -35,68 +34,32 @@
     border-radius: 10px;
 }
 
-/* Card */
 .card {
     border-radius: 16px;
     animation: fadeIn .6s ease;
 }
-
 @keyframes fadeIn {
     from {opacity: 0; transform: translateY(10px);}
     to {opacity: 1; transform: translateY(0);}
 }
 
-/* ========================= SLIDER CHART ========================= */
-.chart-slider {
-    position: relative;
-    overflow: hidden;
-}
+/* Slider/chart styles */
+.chart-slider { position: relative; overflow: hidden; }
+.chart-wrapper { display:flex; transition: transform .6s ease; }
+.chart-slide { min-width:100%; padding:10px; }
+.chart-slide canvas { max-height:270px !important; height:270px !important; }
+.chart-btn { position:absolute; top:50%; transform:translateY(-50%); background:#009c59; color:#fff; border:none; padding:10px 14px; border-radius:50%; cursor:pointer; z-index:5; box-shadow:0 4px 10px rgba(0,0,0,0.2); }
+.chart-btn:hover { background:#00b86a; }
+.chart-btn.prev { left:10px; }
+.chart-btn.next { right:10px; }
 
-.chart-wrapper {
-    display: flex;
-    transition: transform .6s ease;
-}
-
-.chart-slide {
-    min-width: 100%;
-    padding: 10px;
-}
-
-/* FIX UKURAN CHART */
-.chart-slide canvas {
-    max-height: 270px !important;
-    height: 270px !important;
-}
-
-/* Tombol slider */
-.chart-btn {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    background: #009c59;
-    color: white;
-    border: none;
-    padding: 10px 14px;
-    border-radius: 50%;
-    cursor: pointer;
-    z-index: 5;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-}
-.chart-btn:hover {
-    background: #00b86a;
-}
-.chart-btn.prev { left: 10px; }
-.chart-btn.next { right: 10px; }
-
+.badge-low { background:#d9534f; color:white; }
 </style>
-
-
 
 <div class="container-fluid">
 
-    <!-- ======================= TOP STATS ======================= -->
+    <!-- TOP STATS -->
     <div class="row">
-
         <div class="col-lg-4 mb-3">
             <div class="stat-card" style="background: linear-gradient(135deg,#0062ff,#3c9dff);">
                 <h5>Total Orders</h5>
@@ -115,42 +78,32 @@
 
         <div class="col-lg-4 mb-3">
             <div class="stat-card" style="background: linear-gradient(135deg,#c10000,#ff4141);">
-
-                <h5>Need Restock (Critical Stock)</h5>
-
+                <h5>Need Restock (≤ 1)</h5>
                 <div class="restock-box mt-2">
-
-                    @forelse ($low_stock_products as $item)
-                        @if ($item->jumlah_stok < 5)
+                    @if($need_restock->count())
+                        @foreach($need_restock as $item)
                             <div class="d-flex justify-content-between align-items-center mb-2 p-2 bg-white text-dark rounded">
                                 <div>
                                     <strong>{{ $item->nama_stok }}</strong><br>
                                     <small>ID: {{ $item->id_produk }}</small>
                                 </div>
-                                <span class="badge bg-danger">{{ $item->jumlah_stok }} {{ $item->satuan }}</span>
+                                <span class="badge badge-low">{{ $item->jumlah_stok }} {{ $item->satuan }}</span>
                             </div>
-                        @endif
-                    @empty
-                        <p class="text-white">Semua stok aman</p>
-                    @endforelse
-
+                        @endforeach
+                    @else
+                        <p class="text-white">Tidak ada produk kritis (≤ 1)</p>
+                    @endif
                 </div>
-
                 <a href="{{ route('products.index') }}" class="btn btn-light btn-sm">Manage Stock</a>
             </div>
         </div>
-
     </div>
 
-
-
-    <!-- ======================= NEW CHART SLIDER ======================= -->
+    <!-- SLIDER CHARTS -->
     <div class="row mt-3">
         <div class="col-lg-12">
-
             <div class="card shadow-sm p-3">
                 <h5 class="fw-bold">Analytics Dashboard</h5>
-
                 <div class="chart-slider mt-3">
 
                     <button class="chart-btn prev" onclick="prevSlide()">‹</button>
@@ -158,36 +111,28 @@
 
                     <div class="chart-wrapper" id="chartWrapper">
 
-                        <!-- Slide 1 -->
                         <div class="chart-slide">
-                            <h6 class="text-center mb-2">Category Composition (Pie Chart)</h6>
+                            <h6 class="text-center mb-2">Top 10 Produk Berdasarkan Stok</h6>
                             <canvas id="chart1"></canvas>
                         </div>
 
-                        <!-- Slide 2 -->
                         <div class="chart-slide">
-                            <h6 class="text-center mb-2">Stock Usage Overview</h6>
+                            <h6 class="text-center mb-2">Stock Status (Low vs Sufficient)</h6>
                             <canvas id="chart2"></canvas>
                         </div>
 
-                        <!-- Slide 3 -->
                         <div class="chart-slide">
-                            <h6 class="text-center mb-2">Monthly Orders Bar Chart</h6>
+                            <h6 class="text-center mb-2">Jumlah Order (6 Bulan Terakhir)</h6>
                             <canvas id="chart3"></canvas>
                         </div>
 
                     </div>
-
                 </div>
             </div>
-
         </div>
     </div>
 
-
-
-
-    <!-- ======================= ORIGINAL SALES CHART ======================= -->
+    <!-- SALES CHART -->
     <div class="row mt-3">
         <div class="col-lg-12">
             <div class="card shadow-sm">
@@ -199,18 +144,12 @@
         </div>
     </div>
 
-
-
-
-    <!-- ======================= BEST SELLING + LOW STOCK ======================= -->
+    <!-- BEST SELLING + LOW STOCK -->
     <div class="row mt-4">
-
-        <!-- BEST SELLING -->
         <div class="col-lg-6 mb-4">
             <div class="card shadow-sm">
                 <div class="card-body">
                     <h5 class="fw-bold">Best Selling (This Year)</h5>
-
                     <table class="table table-hover mt-3">
                         <thead>
                             <tr>
@@ -231,25 +170,15 @@
                             @endforeach
                         </tbody>
                     </table>
-
                 </div>
             </div>
         </div>
 
-        <!-- LOW STOCK -->
         <div class="col-lg-6 mb-4">
             <div class="card shadow-sm">
                 <div class="card-body">
-
                     <h5 class="fw-bold">Low Stock</h5>
                     <p class="text-muted" style="margin-top:-6px">Stok mendekati habis</p>
-
-                    @php
-                        $low_stock_paginate = \App\Models\Product::where('jumlah_stok','<',300)
-                            ->where('jumlah_stok','>=',0)
-                            ->orderBy('jumlah_stok','asc')
-                            ->paginate(5);
-                    @endphp
 
                     <table class="table table-hover mt-2">
                         <thead>
@@ -286,92 +215,113 @@
 
 </div>
 
-
-
-<!-- ======================= CHART.JS ======================= -->
+<!-- CHART.JS -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
-/* ======================= SLIDER ======================= */
+/* ========= AUTO SLIDE + PAUSE WHEN USER INTERACTS ========= */
+
 let currentSlide = 0;
 const totalSlides = 3;
-const wrapper = document.getElementById("chartWrapper");
+const wrapper = document.getElementById('chartWrapper');
 
+let autoSlideInterval;
+let autoSlidePaused = false;
+let resumeTimeout;
+
+// tampilkan slide
 function showSlide(i) {
     currentSlide = (i + totalSlides) % totalSlides;
     wrapper.style.transform = `translateX(-${currentSlide * 100}%)`;
 }
 
-function nextSlide() { showSlide(currentSlide + 1); }
-function prevSlide() { showSlide(currentSlide - 1); }
+// next/prev karena tombol user → auto slide pause
+function nextSlide(){ pauseAutoSlide(); showSlide(currentSlide + 1); }
+function prevSlide(){ pauseAutoSlide(); showSlide(currentSlide - 1); }
 
-setInterval(nextSlide, 5000);
+// mulai autoslide
+function startAutoSlide() {
+    autoSlideInterval = setInterval(() => {
+        if (!autoSlidePaused) showSlide(currentSlide + 1);
+    }, 5000);
+}
 
-/* Swipe Support */
+// jeda auto-slide jika user interaksi
+function pauseAutoSlide() {
+    autoSlidePaused = true;
+    clearInterval(autoSlideInterval);
+    clearTimeout(resumeTimeout);
+
+    // 10 detik tidak ada interaksi → auto jalan lagi
+    resumeTimeout = setTimeout(() => {
+        autoSlidePaused = false;
+        startAutoSlide();
+    }, 10000);
+}
+
+// swipe gesture
 let startX = 0;
-wrapper.addEventListener("touchstart", e => startX = e.touches[0].clientX);
-wrapper.addEventListener("touchend", e => {
+wrapper.addEventListener('touchstart', e => startX = e.touches[0].clientX);
+wrapper.addEventListener('touchend', e => {
     const diff = e.changedTouches[0].clientX - startX;
     if (diff > 50) prevSlide();
     if (diff < -50) nextSlide();
 });
 
+// jalankan auto-slide saat halaman siap
+startAutoSlide();
 
+/* ========= CHARTS ========= */
 
-/* ======================= CHARTS ======================= */
-document.addEventListener("DOMContentLoaded", () => {
+const chart1Labels = {!! $chart1_labels !!};
+const chart1Data = {!! $chart1_data !!};
 
-    // Chart 1 - PIE
-    new Chart(document.getElementById("chart1"), {
-        type: "pie",
+const chart2Labels = {!! $chart2_labels !!};
+const chart2Data = {!! $chart2_data !!};
+
+const chart3Labels = {!! $chart3_labels !!};
+const chart3Data = {!! $chart3_data !!};
+
+const salesLabels = {!! $sales_labels !!};
+const salesData = {!! $sales_data !!};
+
+document.addEventListener('DOMContentLoaded', () => {
+
+    new Chart(document.getElementById('chart1'), {
+        type: 'bar',
         data: {
-            labels: ["Kopi", "Minuman", "Snack", "Plastik", "Gas"],
-            datasets: [{
-                data: [40, 20, 15, 18, 7],
-                backgroundColor: ["#007bff", "#ffc107", "#ff6384", "#8e44ad", "#2ecc71"]
-            }]
+            labels: chart1Labels,
+            datasets: [{ label: 'Jumlah Stok', data: chart1Data, backgroundColor: '#007bff' }]
         }
     });
 
-    // Chart 2 - DOUGHNUT
-    new Chart(document.getElementById("chart2"), {
-        type: "doughnut",
+    new Chart(document.getElementById('chart2'), {
+        type: 'doughnut',
         data: {
-            labels: ["Stock Dipakai", "Sisa Stok"],
-            datasets: [{
-                data: [65, 35],
-                backgroundColor: ["#36a2eb", "#cccccc"]
-            }]
+            labels: chart2Labels,
+            datasets: [{ data: chart2Data, backgroundColor: ['#dc3545','#198754'] }]
         }
     });
 
-    // Chart 3 - BAR
-    new Chart(document.getElementById("chart3"), {
-        type: "bar",
+    new Chart(document.getElementById('chart3'), {
+        type: 'bar',
         data: {
-            labels: ["Jan", "Feb", "Mar", "Apr", "Mei"],
-            datasets: [{
-                label: "Order",
-                data: [25, 40, 32, 50, 45],
-                backgroundColor: "#009c59"
-            }]
+            labels: chart3Labels,
+            datasets: [{ label: 'Jumlah Order', data: chart3Data, backgroundColor: '#009c59' }]
         }
     });
 
-
-    // ORIGINAL SALES OVERVIEW CHART
-    new Chart(document.getElementById("salesChart"), {
-        type: "line",
+    new Chart(document.getElementById('salesChart'), {
+        type: 'line',
         data: {
-            labels: ["Jan","Feb","Mar","Apr","May","Jun"],
+            labels: salesLabels,
             datasets: [{
-                label: "Pendapatan",
-                data: [120000, 150000, 100000, 210000, 180000, 230000],
-                borderColor: "#007bff",
-                backgroundColor: "rgba(0,123,255,0.25)",
-                tension: 0.35,
-                borderWidth: 3,
-                fill: true
+                label: 'Pendapatan',
+                data: salesData,
+                borderColor:'#007bff',
+                backgroundColor:'rgba(0,123,255,0.18)',
+                tension:0.35,
+                fill:true
             }]
         }
     });

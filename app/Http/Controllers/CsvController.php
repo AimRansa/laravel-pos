@@ -24,7 +24,9 @@ class CsvController extends Controller
 
     public function upload(Request $request)
     {
-        // VALIDASI FILE
+        // ================================
+        // VALIDASI FILE CSV
+        // ================================
         $validator = Validator::make($request->all(), [
             'csv_file' => 'required|mimes:csv,txt|max:40960',
         ]);
@@ -36,11 +38,13 @@ class CsvController extends Controller
         $file = $request->file('csv_file');
         $handle = fopen($file->getRealPath(), 'r');
 
+        // ================================
         // BACA HEADER CSV
+        // ================================
         $firstLine = fgets($handle);
         $header = str_getcsv($firstLine, ';');
 
-        // KOLOM WAJIB
+        // Kolom wajib
         $required = ['idtransaksi', 'id_menu', 'tanggal_transaksi', 'total_pesanan'];
 
         foreach ($required as $col) {
@@ -49,13 +53,15 @@ class CsvController extends Controller
             }
         }
 
-        // INDEX KOLOM CSV
-        $idx_trans    = array_search('idtransaksi', $header);
-        $idx_menu     = array_search('id_menu', $header);
-        $idx_tanggal  = array_search('tanggal_transaksi', $header);
-        $idx_qty      = array_search('total_pesanan', $header);
+        // INDEX kolom CSV
+        $idx_trans   = array_search('idtransaksi', $header);
+        $idx_menu    = array_search('id_menu', $header);
+        $idx_tanggal = array_search('tanggal_transaksi', $header);
+        $idx_qty     = array_search('total_pesanan', $header);
 
+        // ================================
         // VARIABEL
+        // ================================
         $stokPerProduk = [];
         $transactions = [];
         $lineNumber = 1;
@@ -64,18 +70,21 @@ class CsvController extends Controller
 
         try {
 
+            // ================================
+            // BACA FILE CSV BARIS PER BARIS
+            // ================================
             while (($line = fgets($handle)) !== false) {
 
                 $lineNumber++;
                 $row = str_getcsv($line, ';');
 
-                // ID transaksi
+                // Validasi ID Transaksi
                 if (!isset($row[$idx_trans]) || trim($row[$idx_trans]) == '') {
                     throw new \Exception("❌ Baris $lineNumber: 'idtransaksi' kosong.");
                 }
                 $idtrans = trim($row[$idx_trans]);
 
-                // ID Menu
+                // Validasi ID Menu
                 if (!isset($row[$idx_menu]) || trim($row[$idx_menu]) == '') {
                     throw new \Exception("❌ Baris $lineNumber: 'id_menu' kosong.");
                 }
@@ -86,7 +95,7 @@ class CsvController extends Controller
                     throw new \Exception("❌ Baris $lineNumber: ID Menu '$id_menu' tidak ditemukan.");
                 }
 
-                // QTY
+                // Validasi Qty
                 if (!is_numeric($row[$idx_qty])) {
                     throw new \Exception("❌ Baris $lineNumber: total_pesanan harus angka.");
                 }
@@ -95,28 +104,31 @@ class CsvController extends Controller
                     throw new \Exception("❌ Baris $lineNumber: total_pesanan harus lebih dari 0.");
                 }
 
-                // TANGGAL CSV dd/mm/YYYY
+                // Validasi Tanggal CSV
                 $tglCsv = trim($row[$idx_tanggal]);
                 try {
-                    $tanggalFix = Carbon::createFromFormat('d/m/Y', $tglCsv)->format('Y-m-d');
+                    $tanggalFix = Carbon::createFromFormat('d/m/Y', $tglCsv)
+                                        ->format('Y-m-d');
                 } catch (\Exception $err) {
                     throw new \Exception("❌ Baris $lineNumber: Format tanggal '$tglCsv' salah (gunakan dd/mm/YYYY).");
                 }
 
-                // ======================================
-                // INSERT / UPDATE ORDER + UPLOAD TIME
-                // ======================================
-                $order = Order::updateOrCreate(
+                // ================================
+                // INSERT / UPDATE ORDER
+                // ================================
+                Order::updateOrCreate(
                     ['idtransaksi' => $idtrans],
                     [
                         'tanggal_transaksi' => $tanggalFix,
                         'total_pesanan'     => 0,
                         'total_harga'       => 0,
-                        'upload_at'         => now()->timezone('Asia/Jakarta'), // FIX TIMEZONE
+                        'upload_at'         => now()->timezone('Asia/Jakarta'),
                     ]
                 );
 
-                // SIMPAN DETAIL PESANAN
+                // ================================
+                // INSERT DETAIL PESANAN
+                // ================================
                 DetailPesanan::create([
                     'idtransaksi' => $idtrans,
                     'id_menu'     => $id_menu,
@@ -125,8 +137,11 @@ class CsvController extends Controller
                     'subtotal'    => $menu->harga * $qty,
                 ]);
 
-                // CEK RESEP
+                // ================================
+                // PROSES PENGURANGAN STOK RESEP
+                // ================================
                 $resepList = ResepMenu::where('id_menu', $id_menu)->get();
+
                 if ($resepList->isEmpty()) {
                     throw new \Exception("❌ Menu '$id_menu' tidak memiliki resep.");
                 }
@@ -143,9 +158,10 @@ class CsvController extends Controller
                         throw new \Exception("❌ Stok '{$produk->nama_stok}' tidak cukup. Dibutuhkan $pakai {$produk->satuan}.");
                     }
 
-                    // KURANGI STOK
+                    // Kurangi stok
                     Product::where('id', $r->id_produk)->decrement('jumlah_stok', $pakai);
 
+                    // Akumulasi untuk laporan stok
                     if (!isset($stokPerProduk[$r->id_produk])) {
                         $stokPerProduk[$r->id_produk] = [
                             'nama'   => $produk->nama_stok,
@@ -160,8 +176,11 @@ class CsvController extends Controller
                 $transactions[$idtrans] = true;
             }
 
-            // UPDATE TOTAL ORDER
+            // ================================
+            // UPDATE TOTAL PESANAN / TOTAL HARGA PER ORDER
+            // ================================
             foreach (array_keys($transactions) as $trx) {
+
                 $details = DetailPesanan::where('idtransaksi', $trx)->get();
 
                 Order::where('idtransaksi', $trx)->update([
@@ -170,7 +189,9 @@ class CsvController extends Controller
                 ]);
             }
 
-            // LAPORAN
+            // ================================
+            // BUAT LAPORAN HARIAN
+            // ================================
             $laporan = Setting::firstOrCreate(
                 ['tanggal_laporan' => Carbon::today()->toDateString()],
                 ['jumlah_transaksi' => 0, 'total_stok' => 0]
@@ -178,6 +199,28 @@ class CsvController extends Controller
 
             $laporan->increment('jumlah_transaksi', count($transactions));
 
+            // ================================
+            // INSERT LAPORAN DETAIL MENU TERJUAL
+            // ================================
+            foreach (array_keys($transactions) as $trx) {
+
+                $details = DetailPesanan::where('idtransaksi', $trx)->get();
+
+                foreach ($details as $d) {
+
+                    LaporanDetail::create([
+                        'laporan_id'  => $laporan->id_laporan,
+                        'id_menu'     => $d->id_menu,
+                        'nama_menu'   => $d->menu->nama_menu,  // FIX RELASI
+                        'quantity'    => $d->quantity,
+                        'subtotal'    => $d->subtotal,
+                    ]);
+                }
+            }
+
+            // ================================
+            // INSERT LAPORAN STOK KELUAR
+            // ================================
             foreach ($stokPerProduk as $s) {
                 LaporanStok::create([
                     'laporan_id'       => $laporan->id_laporan,

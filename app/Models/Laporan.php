@@ -11,10 +11,9 @@ class Laporan extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'id_laporan',
-        'tanggal',
-        'total_transaksi',
-        'total_pendapatan'
+        'tanggal_laporan',
+        'jumlah_transaksi',
+        'total_stok',
     ];
 
     public function detail()
